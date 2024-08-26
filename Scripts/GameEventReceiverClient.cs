@@ -25,14 +25,16 @@ public class GameEventReceiverClient : MonoBehaviour
         return createdObjects[objectID];
     }
 
-    void HandleConnection(Dictionary<string, string> actionAttributes)
+    void HandleConnection(GameEvent gameEvent)
     {
         Debug.Log("Connected");
         GameObject.FindFirstObjectByType<ClientGameUI>().DestroyWaitingObject();
     }
 
-    void CreateNewGameTaskObject(Dictionary<string, string> creationAttributes)
+    void CreateNewGameTaskObject(GameEvent gameEvent)
     {
+        Dictionary<string, string> creationAttributes = gameEvent.EventAttributes;
+
         string objectType = creationAttributes["ObjectType"];
         GameObject originalObject = typeNameToObjectDictionary[objectType];
 
@@ -46,8 +48,10 @@ public class GameEventReceiverClient : MonoBehaviour
         createdObjects.Add(objectID, newObject.GetComponent<GameTaskObject>());
     }
 
-    void PerformActionOnObject(Dictionary<string, string> actionAttributes)
+    void PerformActionOnObject(GameEvent gameEvent)
     {
+        Dictionary<string, string> actionAttributes = gameEvent.EventAttributes;
+
         GameTaskObject gameTaskObject = GetObjectByID(int.Parse(actionAttributes["ObjectID"]));
         gameTaskObject.PerformAction(actionAttributes);
     }
@@ -56,16 +60,18 @@ public class GameEventReceiverClient : MonoBehaviour
     {
         if (gameEvent.Type == GameEvent.EventTypes.Connect)
         {
-            HandleConnection(gameEvent.EventAttributes);
+            HandleConnection(gameEvent);
         }
         else if (gameEvent.Type == GameEvent.EventTypes.Create)
         {
-            CreateNewGameTaskObject(gameEvent.EventAttributes);
+            CreateNewGameTaskObject(gameEvent);
         }
         else if (gameEvent.Type == GameEvent.EventTypes.Action)
         {
-            PerformActionOnObject(gameEvent.EventAttributes);
+            PerformActionOnObject(gameEvent);
         }
+
+        throw new NotImplementedException("Invalid GameEvent type encountered.");
     }
 
     public void ReceiveEvents(DataToken receivedDataToken)

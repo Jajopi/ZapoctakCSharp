@@ -26,13 +26,15 @@ public class GameEventReceiverServer : MonoBehaviour
         return createdObjects[objectID];
     }
 
-    void ConnectNewClient(Dictionary<string, string> actionAttributes)
+    void ConnectNewClient(GameEvent gameEvent)
     {
-        networkServer.AddClient(new Uri(actionAttributes["ClientAddress"]));
+        networkServer.AddClient(new Uri(gameEvent.EventAttributes["ClientAddress"]));
     }
 
-    /*void CreateNewGameTaskObject(Dictionary<string, string> creationAttributes)
+    void CreateNewGameTaskObject(GameEvent gameEvent)
     {
+        Dictionary<string, string> creationAttributes = gameEvent.EventAttributes;
+
         string objectType = creationAttributes["ObjectType"];
         GameObject originalObject = typeNameToObjectDictionary[objectType];
 
@@ -40,31 +42,42 @@ public class GameEventReceiverServer : MonoBehaviour
         Quaternion rotation = GameEvent.ParseEventRotation(creationAttributes["ObjectRotation"]);
 
         GameObject newObject = Instantiate(originalObject, position, rotation);
-        newObject.GetComponent<GameTaskObject>().SetID(createdObjects.Count);
+        int newObjectID = createdObjects.Count;
+        newObject.GetComponent<GameTaskObject>().SetID(newObjectID);
         createdObjects.Add(newObject.GetComponent<GameTaskObject>());
+
+        networkServer.SendEvent(new GameEvent(gameEvent.ToString() + $";ObjectID:{newObjectID}"));
     }
 
-    void PerformActionOnObject(Dictionary<string, string> actionAttributes)
+    void PerformActionOnObject(GameEvent gameEvent)
     {
+        Dictionary<string, string> actionAttributes = gameEvent.EventAttributes;
+
         GameTaskObject gameTaskObject = GetObjectByID(int.Parse(actionAttributes["ObjectID"]));
-        gameTaskObject.PerformAction(actionAttributes);
+        bool wasActionSuccesful = gameTaskObject.PerformAction(actionAttributes);
+        if (wasActionSuccesful)
+        {
+            networkServer.SendEvent(gameEvent);
+        }
     }
 
     void PerformEvent(GameEvent gameEvent)
     {
         if (gameEvent.Type == GameEvent.EventTypes.Connect)
         {
-            ConnectNewPlayer(gameEvent.EventAttributes);
+            ConnectNewClient(gameEvent);
         }
         else if (gameEvent.Type == GameEvent.EventTypes.Create)
         {
-            CreateNewGameTaskObject(gameEvent.EventAttributes);
+            CreateNewGameTaskObject(gameEvent);
         }
         else if (gameEvent.Type == GameEvent.EventTypes.Action)
         {
-            PerformActionOnObject(gameEvent.EventAttributes);
+            PerformActionOnObject(gameEvent);
         }
-    }*/
+
+        throw new NotImplementedException("Invalid GameEvent type encountered.");
+    }
 
     public void ReceiveEvents(DataToken receivedDataToken)
     {
@@ -77,7 +90,7 @@ public class GameEventReceiverServer : MonoBehaviour
                 continue;
             }
             GameEvent gameEvent = new GameEvent(eventString);
-            //PerformEvent(gameEvent);
+            PerformEvent(gameEvent);
             Debug.Log(gameEvent);
         }
     }

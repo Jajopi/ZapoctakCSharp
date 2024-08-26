@@ -97,6 +97,11 @@ namespace Networking
             //throw new NotImplementedException("Global IP address search not supported.");
         }
 
+        public static Uri GetUriFromAddress(string address)
+        {
+            return new Uri("http://" + address);
+        }
+
         public static int GetRandomFreePort()
         {
             bool IsPortFree(int portNumber)

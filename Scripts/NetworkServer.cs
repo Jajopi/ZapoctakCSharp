@@ -54,6 +54,8 @@ public class NetworkServer : MonoBehaviour
     {
         clients.Add(clientAddress);
 
+        networkSender.SendData(new DataToken("Connect"), clientAddress);
+
         string data = sentDataLog.ToString();
         if (data.Length > 0)
         {
@@ -66,7 +68,7 @@ public class NetworkServer : MonoBehaviour
         sentDataLog.AppendLine(gameEvent.ToString());
     }
 
-    void SendData(DataToken data)
+    void SendDataToAllClients(DataToken data)
     {
         foreach (Uri client in clients)
         {
@@ -81,6 +83,6 @@ public class NetworkServer : MonoBehaviour
             SaveEventIntoLog(gameEvent);
         }
 
-        SendData(new DataToken(gameEvent.ToString()));
+        SendDataToAllClients(new DataToken(gameEvent.ToString()));
     }
 }

@@ -7,12 +7,13 @@ public class GameTaskObject : MonoBehaviour
 {
     public int ObjectID { get;  private set; }
 
-    public void PerformAction(Dictionary<string, string> actionAttributes)
+    public bool PerformAction(Dictionary<string, string> actionAttributes)
     {
         foreach (string key in actionAttributes.Keys)
         {
             Debug.Log(key + ": " + actionAttributes[key]);
         }
+        return true;
     }
 
     public void SetID(int newID)

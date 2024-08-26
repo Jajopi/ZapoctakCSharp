@@ -30,18 +30,18 @@ public class NetworkClient : MonoBehaviour
         networkReceiver.StartReceiving();
 
         networkSender = new SimpleSender();
-        string targetAddress = GetTargetAddress();
-        networkSender.SetTarget(new Uri(targetAddress));
+        Uri targetAddress = GetTargetAddress();
+        networkSender.SetTarget(targetAddress);
 
         GameEvent connectionEvent = new GameEvent($"Connect;ClientAddress:{receivingAddress}");
         networkSender.SendData(new DataToken(connectionEvent.ToString()));
     }
 
-    string GetTargetAddress()
+    Uri GetTargetAddress()
     {
         if (PlayerPrefs.HasKey("ServerAddress"))
         {
-            return PlayerPrefs.GetString("ServerAddress");
+            return NetworkHelperFunctions.GetUriFromAddress(PlayerPrefs.GetString("ServerAddress"));
         }
         throw new InvalidOperationException("ServerAddress is missing from PlayerPrefs");
     }
