@@ -47,7 +47,7 @@ namespace LockFreeAsyncDataStorage
                 {
                     throw new InvalidOperationException("DataStorage is fully occupied.");
                 }
-                Debug.Log($"Pushing {data}.");
+                //Debug.Log($"Pushing {data}.");
 
                 storage.Data[storage.pushIndex] = data;
                 storage.pushIndex = (storage.pushIndex + 1) % storage.capacity;
@@ -74,7 +74,7 @@ namespace LockFreeAsyncDataStorage
                 {
                     throw new InvalidOperationException("DataStorage is empty.");
                 }
-                Debug.Log($"Popping {storage.Data.ToString()}.");
+                //Debug.Log($"Popping.");
 
                 TInnerData returnData = storage.Data[storage.popIndex];
                 storage.popIndex = (storage.popIndex + 1) % storage.capacity;
@@ -149,7 +149,7 @@ namespace LockFreeAsyncDataStorage
 
             public void PushData(TInnerData data)
             {
-                Debug.Log($"Pushing {data}.");
+                //Debug.Log($"Pushing {data}.");
 
                 storage.Data = data;
                 storage.isOccupied = true;
@@ -175,7 +175,7 @@ namespace LockFreeAsyncDataStorage
                 {
                     throw new InvalidOperationException("DataStorage is empty.");
                 }
-                Debug.Log($"Popping {storage.Data}.");
+                //Debug.Log($"Popping {storage.Data}.");
 
                 TInnerData returnData = storage.Data;
                 storage.isOccupied = false;

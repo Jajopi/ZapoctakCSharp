@@ -1,9 +1,12 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using GameEvents;
 
 public class PlayerMovement : MonoBehaviour
 {
-    Camera playerCamera;
+    bool movementEnabled;
+
+    Transform playerHead;
     float horizontalMouseSpeed = 4f;
     float verticalMouseSpeed = 4f;
     float cameraAngleHeight = 0f;
@@ -12,11 +15,26 @@ public class PlayerMovement : MonoBehaviour
     float sidewaysMoveSpeed = 3f;
     float backwardMoveSpeed = 2f;
 
-    float jumpPower = 500f;
+    float jumpPower = 300f;
+    bool canJump = false;
+    float jumpCooldown = 0.1f;
+    float jumpCooldownRemainingTime;
+
+    float sendTransformEvery_seconds = 2f;
+    float sendTransformTimer = 0f;
+    NetworkClient networkClient;
+    GameTaskObject gameTask;
 
     void Start()
     {
-        playerCamera = GetComponentInChildren<Camera>();
+        movementEnabled = true;
+
+
+
+        playerHead = transform.Find("Head").Find("Camera");
+
+        networkClient = Object.FindFirstObjectByType<NetworkClient>();
+        gameTask = gameObject.GetComponent<GameTaskObject>();
 
         Cursor.lockState = CursorLockMode.Locked;
     }
@@ -50,47 +68,12 @@ public class PlayerMovement : MonoBehaviour
         
         Vector3 newViewVector = new Vector3(
             cameraAngleHeight,
-            playerCamera.transform.eulerAngles.y,
-            playerCamera.transform.eulerAngles.z);
+            playerHead.eulerAngles.y,
+            playerHead.transform.eulerAngles.z);
 
-        playerCamera.transform.Rotate(
-            newViewVector - playerCamera.transform.eulerAngles);
-
-        /*playerCamera.transform.rotation = Quaternion.LookRotation(
-    Vector3.RotateTowards(playerCamera.transform.forward,
-        new Vector3(0, cameraAngleHeight, 0),
-        Time.deltaTime * lookRotatingSpeedRadians,
-        0f)
-    );*/
-        /*
-        playerCamera.transform.eulerAngles = new Vector3(
-            Mathf.Clamp(playerCamera.transform.eulerAngles.x, 190f, 350f),
-            playerCamera.transform.eulerAngles.y,
-            playerCamera.transform.eulerAngles.z);*/
-
-        //Debug.Log(playerCamera.transform.localRotation.eulerAngles.x);
-        /*if (playerCamera.transform.eulerAngles.x > 75)
-        {
-            playerCamera.transform.Rotate((-1) * viewRotationCoordinates.x, 0, 0);
-        }
-        /*if (playerCamera.transform.eulerAngles.x < 90)
-        {
-            playerCamera.transform.eulerAngles = new Vector3(
-                90,
-                playerCamera.transform.eulerAngles.y,
-                playerCamera.transform.eulerAngles.z);
-        }*/
+        playerHead.transform.Rotate(
+            newViewVector - playerHead.transform.eulerAngles);
     }
-    /*
-    void SetMousePosition(Vector3 screenPosition)
-    {
-        Mouse.current.WarpCursorPosition(screenPosition);
-    }
-
-    void CenterMousePosition()
-    {
-        SetMousePosition(new Vector3(Screen.width / 2, Screen.height / 2, 0));
-    }*/
 
     Vector3 GetMovementCoordinates()
     {
@@ -115,20 +98,31 @@ public class PlayerMovement : MonoBehaviour
         transform.Translate(movementCoordinates);
     }
 
-    bool CanJumpNow()
+    public void SetLegsTouchingFloor(bool touching)
     {
-        return true;
+        if (canJump == touching)
+        {
+            return;
+        }
+        canJump = touching;
+        jumpCooldownRemainingTime = jumpCooldown;
+    }
+
+    void Jump()
+    {
+        transform.GetComponent<Rigidbody>().AddForce(new Vector3(0, jumpPower, 0));
     }
 
     void TryJump()
     {
-        if (Input.GetButton("Jump") && CanJumpNow())
+        if (Input.GetButton("Jump") && canJump && jumpCooldownRemainingTime <= 0)
         {
-            transform.GetComponent<Rigidbody>().AddForce(new Vector3(0, jumpPower, 0));
+            Jump();
+            jumpCooldownRemainingTime = jumpCooldown;
         }
     }
 
-    void Update()
+    void PerformUpdateMovement()
     {
         Vector2 viewRotationCoordinates = GetStandardViewRotationCoordinates();
         RotateView(viewRotationCoordinates);
@@ -137,5 +131,32 @@ public class PlayerMovement : MonoBehaviour
         MovePlayer(movementCoordinates);
 
         TryJump();
+    }
+
+    void SendTransform()
+    {
+        networkClient.SendEvent(new GameEvent(gameTask.EncodeTransform()));
+    }
+
+    void TrySendTransform()
+    {
+        sendTransformTimer += Time.deltaTime;
+        if (sendTransformTimer > sendTransformEvery_seconds)
+        {
+            sendTransformTimer -= sendTransformEvery_seconds;
+            SendTransform();
+        }
+    }
+
+    void Update()
+    {
+        jumpCooldownRemainingTime -= Time.deltaTime;
+
+        if (movementEnabled)
+        {
+            PerformUpdateMovement();
+        }
+
+        TrySendTransform();
     }
 }
