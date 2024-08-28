@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using GameEvents;
 using Networking;
 
-//string dataString = "Create;ObjectType:Player;ObjectPosition:0~10~0;ObjectRotation:0~0~0~0";
-
 public class NetworkClient : MonoBehaviour
 {
     INetworkReceiver networkReceiver;
@@ -14,7 +12,9 @@ public class NetworkClient : MonoBehaviour
 
     GameEventReceiverClient eventReceiver;
 
-    void Start()
+    int clientID = -1;
+
+    void Awake()
     {
         eventReceiver = transform.GetComponent<GameEventReceiverClient>();
 
@@ -63,8 +63,18 @@ public class NetworkClient : MonoBehaviour
         }
     }
 
-    public void SendEvent(GameEvent gameEvent)
+    public virtual void SendEvent(GameEvent gameEvent)
     {
         networkSender.SendData(new DataToken(gameEvent.ToString()));
+    }
+
+    public virtual int GetClientID()
+    {
+        return clientID;
+    }
+
+    public void SetClientID(int newClientID)
+    {
+        clientID = newClientID;
     }
 }

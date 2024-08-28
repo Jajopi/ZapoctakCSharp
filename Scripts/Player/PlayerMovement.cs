@@ -20,20 +20,16 @@ public class PlayerMovement : MonoBehaviour
     float jumpCooldown = 0.1f;
     float jumpCooldownRemainingTime;
 
-    float sendTransformEvery_seconds = 2f;
+    float sendTransformEvery_seconds = 0.05f;
     float sendTransformTimer = 0f;
-    NetworkClient networkClient;
     GameTaskObject gameTask;
 
     void Start()
     {
         movementEnabled = true;
 
-
-
         playerHead = transform.Find("Head").Find("Camera");
 
-        networkClient = Object.FindFirstObjectByType<NetworkClient>();
         gameTask = gameObject.GetComponent<GameTaskObject>();
 
         Cursor.lockState = CursorLockMode.Locked;
@@ -110,7 +106,15 @@ public class PlayerMovement : MonoBehaviour
 
     void Jump()
     {
-        transform.GetComponent<Rigidbody>().AddForce(new Vector3(0, jumpPower, 0));
+        Rigidbody rigidbody = transform.GetComponent<Rigidbody>();
+
+        rigidbody.linearVelocity = new Vector3(rigidbody.linearVelocity.x,
+                                               0,
+                                               rigidbody.linearVelocity.z);
+
+        rigidbody.AddForce(new Vector3(0,
+                                       jumpPower,
+                                       0));
     }
 
     void TryJump()
@@ -135,7 +139,7 @@ public class PlayerMovement : MonoBehaviour
 
     void SendTransform()
     {
-        networkClient.SendEvent(new GameEvent(gameTask.EncodeTransform()));
+        gameTask.SendTransformUpdate();
     }
 
     void TrySendTransform()
@@ -158,5 +162,15 @@ public class PlayerMovement : MonoBehaviour
         }
 
         TrySendTransform();
+    }
+
+    void OnDisable()
+    {
+        transform.GetComponent<Rigidbody>().useGravity = false;
+    }
+
+    void OnDestroy()
+    {
+        Cursor.lockState = CursorLockMode.None;
     }
 }

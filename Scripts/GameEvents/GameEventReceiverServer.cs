@@ -4,31 +4,33 @@ using UnityEngine;
 using Networking;
 using GameEvents;
 
-public class GameEventReceiverServer : MonoBehaviour
+public class GameEventReceiverServer : GameEventReceiver
 {
-    [SerializeField]
-    ObjectTypeDictionary objectTypes;
-    Dictionary<string, GameObject> typeNameToObjectDictionary;
-
     NetworkServer networkServer;
 
     List<GameTaskObject> createdObjects = new List<GameTaskObject>();
 
-    void Start()
+    void Awake()
     {
         networkServer = transform.GetComponent<NetworkServer>();
-        typeNameToObjectDictionary = objectTypes.ToDictionary();
+        typeNameToObjectDictionary = GameObject.FindFirstObjectByType<ObjectTypeDictionaryHolder>().GetDictionary();
     }
 
-    GameTaskObject GetObjectByID(int objectID)
+    public override GameTaskObject GetObjectByID(int objectID)
     {
-        //if (objectID < 0 || objectID >= createdObjects.Count) return null;
         return createdObjects[objectID];
+    }
+
+    void CreateNewPlayer(int controllerID)
+    {
+        CreateNewGameTaskObject(new GameEvent($"Create;ObjectType:Player;ControllerID:{controllerID};ObjectPosition:0~10~0;ObjectRotation:0~0~0~0"));
     }
 
     void ConnectNewClient(GameEvent gameEvent)
     {
-        networkServer.AddClient(new Uri(gameEvent.EventAttributes["ClientAddress"]));
+        int newClientID = networkServer.AddClient(new Uri(gameEvent.EventAttributes["ClientAddress"]));
+
+        CreateNewPlayer(newClientID);
     }
 
     void CreateNewGameTaskObject(GameEvent gameEvent)
@@ -44,7 +46,18 @@ public class GameEventReceiverServer : MonoBehaviour
         GameObject newObject = Instantiate(originalObject, position, rotation);
         int newObjectID = createdObjects.Count;
         newObject.GetComponent<GameTaskObject>().SetID(newObjectID);
+        if (creationAttributes.ContainsKey("ControllerID"))
+        {
+            int controllerID = int.Parse(creationAttributes["ControllerID"]);
+            newObject.GetComponent<GameTaskObject>().SetControllingPlayerID(controllerID);
+        }
+
         createdObjects.Add(newObject.GetComponent<GameTaskObject>());
+
+        if (creationAttributes.ContainsKey("ActionType"))
+        {
+            PerformActionOnObject(new GameEvent(gameEvent.ToString() + $";ObjectID:{newObjectID}"));
+        }
 
         networkServer.SendEvent(new GameEvent(gameEvent.ToString() + $";ObjectID:{newObjectID}"));
     }
@@ -61,7 +74,7 @@ public class GameEventReceiverServer : MonoBehaviour
         }
     }
 
-    void PerformEvent(GameEvent gameEvent)
+    protected override void PerformEvent(GameEvent gameEvent)
     {
         if (gameEvent.Type == GameEvent.EventTypes.Connect)
         {
@@ -75,23 +88,9 @@ public class GameEventReceiverServer : MonoBehaviour
         {
             PerformActionOnObject(gameEvent);
         }
-
-        throw new NotImplementedException("Invalid GameEvent type encountered.");
-    }
-
-    public void ReceiveEvents(DataToken receivedDataToken)
-    {
-        string tokenEvents = receivedDataToken.Value;
-
-        foreach (string eventString in tokenEvents.Split('\n'))
+        else
         {
-            if (eventString.Length == 0)
-            {
-                continue;
-            }
-            GameEvent gameEvent = new GameEvent(eventString);
-            PerformEvent(gameEvent);
-            Debug.Log(gameEvent);
+            throw new NotImplementedException("Invalid GameEvent type encountered.");
         }
     }
 }

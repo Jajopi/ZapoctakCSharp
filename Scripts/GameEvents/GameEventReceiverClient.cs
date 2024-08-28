@@ -4,30 +4,27 @@ using UnityEngine;
 using Networking;
 using GameEvents;
 
-public class GameEventReceiverClient : MonoBehaviour
+public class GameEventReceiverClient : GameEventReceiver
 {
-    [SerializeField]
-    ObjectTypeDictionary objectTypes;
-    Dictionary<string, GameObject> typeNameToObjectDictionary;
-
     NetworkClient networkClient;
 
     Dictionary<int, GameTaskObject> createdObjects = new Dictionary<int, GameTaskObject>();
 
-    void Start()
+    void Awake()
     {
         networkClient = transform.GetComponent<NetworkClient>();
-        typeNameToObjectDictionary = objectTypes.ToDictionary();
+        typeNameToObjectDictionary = GameObject.FindFirstObjectByType<ObjectTypeDictionaryHolder>().GetDictionary();
     }
 
-    GameTaskObject GetObjectByID(int objectID)
+    public override GameTaskObject GetObjectByID(int objectID)
     {
         return createdObjects[objectID];
     }
 
     void HandleConnection(GameEvent gameEvent)
     {
-        Debug.Log("Connected");
+        networkClient.SetClientID(int.Parse(gameEvent.EventAttributes["ClientID"]));
+        
         GameObject.FindFirstObjectByType<ClientGameUI>().DestroyWaitingObject();
     }
 
@@ -44,8 +41,18 @@ public class GameEventReceiverClient : MonoBehaviour
 
         int objectID = int.Parse(creationAttributes["ObjectID"]);
         newObject.GetComponent<GameTaskObject>().SetID(objectID);
+        if (creationAttributes.ContainsKey("ControllerID"))
+        {
+            int controllerID = int.Parse(creationAttributes["ControllerID"]);
+            newObject.GetComponent<GameTaskObject>().SetControllingPlayerID(controllerID);
+        }
 
         createdObjects.Add(objectID, newObject.GetComponent<GameTaskObject>());
+
+        if (creationAttributes.ContainsKey("ActionType"))
+        {
+            PerformActionOnObject(gameEvent);
+        }
     }
 
     void PerformActionOnObject(GameEvent gameEvent)
@@ -56,7 +63,7 @@ public class GameEventReceiverClient : MonoBehaviour
         gameTaskObject.PerformAction(actionAttributes);
     }
 
-    void PerformEvent(GameEvent gameEvent)
+    protected override void PerformEvent(GameEvent gameEvent)
     {
         if (gameEvent.Type == GameEvent.EventTypes.Connect)
         {
@@ -70,18 +77,9 @@ public class GameEventReceiverClient : MonoBehaviour
         {
             PerformActionOnObject(gameEvent);
         }
-
-        throw new NotImplementedException("Invalid GameEvent type encountered.");
-    }
-
-    public void ReceiveEvents(DataToken receivedDataToken)
-    {
-        string tokenEvents = receivedDataToken.Value;
-
-        foreach (string eventString in tokenEvents.Split('\n'))
+        else
         {
-            GameEvent gameEvent = new GameEvent(eventString);
-            PerformEvent(gameEvent);
+            throw new NotImplementedException("Invalid GameEvent type encountered.");
         }
     }
 }

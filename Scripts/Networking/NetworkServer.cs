@@ -15,7 +15,7 @@ public class NetworkServer : MonoBehaviour
     List<Uri> clients = new List<Uri>();
     StringBuilder sentDataLog = new StringBuilder();
 
-    void Start()
+    void Awake()
     {
         eventReceiver = transform.GetComponent<GameEventReceiverServer>();
 
@@ -50,17 +50,20 @@ public class NetworkServer : MonoBehaviour
         }
     }
 
-    public void AddClient(Uri clientAddress)
+    public int AddClient(Uri clientAddress)
     {
         clients.Add(clientAddress);
 
-        networkSender.SendData(new DataToken("Connect"), clientAddress);
+        int newClientID = clients.Count;
+        networkSender.SendData(new DataToken($"Connect;ClientID:{newClientID}"), clientAddress);
 
         string data = sentDataLog.ToString();
         if (data.Length > 0)
         {
+            Debug.Log(data);
             networkSender.SendData(new DataToken(data), clientAddress);
         }
+        return newClientID;
     }
 
     void SaveEventIntoLog(GameEvent gameEvent)
@@ -84,5 +87,10 @@ public class NetworkServer : MonoBehaviour
         }
 
         SendDataToAllClients(new DataToken(gameEvent.ToString()));
+    }
+
+    public Uri GetReceivingAddress()
+    {
+        return networkReceiver.GetReceivingAddress();
     }
 }

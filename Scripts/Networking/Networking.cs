@@ -59,6 +59,7 @@ namespace Networking
         void EndReceiving();
 
         bool IsReceiving();
+        Uri GetReceivingAddress();
 
         bool IsDataReady();
         DataToken GetNextReceivedData();
@@ -148,7 +149,6 @@ namespace Networking
 
         public void SendData(DataToken data, Uri targetAddress)
         {
-            //Debug.Log($"Sending {data} to {targetAddress}.");
             targetClient.PostAsync(targetAddress, new StringContent(data.ToString()));
         }
 
@@ -209,7 +209,7 @@ namespace Networking
             listener.Prefixes.Add(address.ToString());
             listener.Start();
 
-            Debug.Log("Receiving started");
+            Debug.Log($"Receiving started at {address}");
 
             while (true)
             {
@@ -247,6 +247,11 @@ namespace Networking
             return listenerThread.IsAlive;
         }
 
+        public Uri GetReceivingAddress()
+        {
+            return address;
+        }
+
         public bool IsDataReady()
         {
             return storagePopper.IsReady();
@@ -257,121 +262,4 @@ namespace Networking
             return storagePopper.PopData();
         }
     }
-
-    /*
-    public class TaggingSender : SimpleSender
-    {
-        SimpleSender sender = new SimpleSender();
-        string defaultTag = "";
-        const string TAG_SEPARATOR = "|";
-
-        public override void SetTarget(Uri targetAddress)
-        {
-            sender.SetTarget(targetAddress);
-        }
-
-        public void SetDefaultTag(string tag)
-        {
-            defaultTag = tag;
-        }
-
-        public override void SendData(object data, Uri targetAddress)
-        {
-            sender.SendData(defaultTag + TAG_SEPARATOR + data.ToString(), targetAddress);
-        }
-
-        public override void SendData(object data)
-        {
-            sender.SendData(defaultTag + TAG_SEPARATOR + data.ToString());
-        }
-
-        public override void SendData(object data, string customTag, Uri targetAddress)
-        {
-            sender.SendData(customTag + TAG_SEPARATOR + data.ToString(), targetAddress);
-        }
-
-        public override void SendData(object data, string customTag)
-        {
-            sender.SendData(customTag + TAG_SEPARATOR + data.ToString());
-        }
-    }*/
-
-    /*
-    public class TagSeparatingReceiver : SimpleReceiver
-    {
-        Thread listenerThread;
-        HttpListener listener;
-        Uri address;
-
-        Dictionary<string, IDataStorage<DataToken>> storages = new Dictionary<string, IDataStorage<DataToken>>();
-        Dictionary<string, IDataStoragePusher<DataToken>> storagePushers = new Dictionary<string, IDataStoragePusher<DataToken>>();
-        Dictionary<string, IDataStoragePopper<DataToken>> storagePoppers = new Dictionary<string, IDataStoragePopper<DataToken>>();
-
-        public TaggingReceiver(Uri receivingAddress)
-        {
-            address = receivingAddress;
-        }
-
-        void AddStorageForTag(string tag, bool isStorageRewritable = false)
-        {
-            IDataStorage<DataToken> storage;
-            if (isStorageRewritable)
-            {
-                storage = new RewritableDataStorage<DataToken>();
-            }
-            else
-            {
-                storage = new ConstantCapacityDataStorage<DataToken>(10);
-            }
-
-            storages.Add(tag, storage);
-            storagePushers.Add(tag, storage.Pusher);
-            storagePoppers.Add(tag, storage.Popper);
-        }
-
-        override void PushDataIntoStorage(DataToken token)
-        {
-            if (!storages.ContainsKey(token.Tag))
-            {
-                AddStorageForTag(token.Tag);
-            }
-
-            storagePushers[token.Tag].PushData(token);
-        }
-
-        public void StartReceiving()
-        {
-            listenerThread = new Thread(Listen);
-            listenerThread.Start();
-        }
-
-        public void EndReceiving()
-        {
-            if (listenerThread is null)
-            {
-                throw new InvalidOperationException($"The listener {this.ToString()} was not started yet.");
-            }
-            else if (!listenerThread.IsAlive)
-            {
-                throw new InvalidOperationException($"The listener thread of {this.ToString()} was already aborted.");
-            }
-            listenerThread.Abort();
-        }
-
-        public bool IsReceiving()
-        {
-            if (listenerThread is null) return false;
-            return listenerThread.IsAlive;
-        }
-
-        public bool IsDataReady()
-        {
-            return storagePopper.IsReady();
-        }
-
-        public DataToken GetNextReceivedData()
-        {
-            return storagePopper.PopData();
-        }
-    }*/
 }

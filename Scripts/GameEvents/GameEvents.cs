@@ -56,6 +56,36 @@ namespace GameEvents
             return $"{rotation[0]}~{rotation[1]}~{rotation[2]}~{rotation[3]}";
         }
 
+        /*public static List<TValue> ParseList<TValue>(string listString) where TValue : IParsable<TValue>
+        {
+            List<TValue> values = new List<TValue>();
+            foreach (string rawValue in listString.Split("~"))
+            {
+                values.Add(TValue.Parse(rawValue));
+            }
+            return values;
+        }*/
+
+        public static List<float> ParseListOfFloats(string listString)
+        {
+            List<float> values = new List<float>();
+            foreach (string rawValue in listString.Split("~"))
+            {
+                values.Add(float.Parse(rawValue));
+            }
+            return values;
+        }
+
+        public static string EncodeList<TValue>(List<TValue> list)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (TValue value in list)
+            {
+                sb.Append(value.ToString());
+            }
+            return sb.ToString();
+        }
+
         public EventTypes Type;
         public bool IsTemporary;
         public Dictionary<string, string> EventAttributes;
@@ -74,8 +104,9 @@ namespace GameEvents
                 }
 
                 bool skipFirst = true;
-                foreach (string value in values)
+                foreach (string rawValue in values)
                 {
+                    string value = rawValue.Trim();
                     if (skipFirst)
                     {
                         skipFirst = false;
@@ -94,11 +125,12 @@ namespace GameEvents
                     }
 
                     string[] keyValuePair = value.Split(":");
-                    EventAttributes.Add(keyValuePair[0], keyValuePair[1]);
+                    EventAttributes.Add(keyValuePair[0], value.Substring(keyValuePair[0].Length + 1));
                 }
             }
             catch (Exception e)
             {
+                Debug.Log(encoding);
                 throw new FormatException($"GameEvent has invalid encoding, exception: {e.Message}");
             }
         }
@@ -133,7 +165,7 @@ namespace GameEvents
     }
 
     [Serializable]
-    class ObjectTypeDictionary
+    public class ObjectTypeDictionary
     {
         [SerializeField]
         ObjectTypeDictionaryItem[] items;
