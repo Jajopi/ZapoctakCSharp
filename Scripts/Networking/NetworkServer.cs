@@ -60,7 +60,6 @@ public class NetworkServer : MonoBehaviour
         string data = sentDataLog.ToString();
         if (data.Length > 0)
         {
-            Debug.Log(data);
             networkSender.SendData(new DataToken(data), clientAddress);
         }
         return newClientID;

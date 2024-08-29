@@ -20,8 +20,14 @@ public class GameTaskObject : MonoBehaviour
 
     protected bool PerformTransformSet(Dictionary<string, string> actionAttributes)
     {
-        transform.position = GameEvent.ParseEventPosition(actionAttributes["Position"]);
-        transform.rotation = GameEvent.ParseEventRotation(actionAttributes["Rotation"]);
+        transform.position = GameEvent.ParseVector3(actionAttributes["Position"]);
+        transform.rotation = GameEvent.ParseQuaternion(actionAttributes["Rotation"]);
+        
+        Rigidbody rigidbody = transform.GetComponent<Rigidbody>();
+        if (rigidbody is not null && actionAttributes.ContainsKey("Velocity"))
+        {
+            rigidbody.linearVelocity = GameEvent.ParseVector3(actionAttributes["Velocity"]);
+        }
         return true;
     }
 
@@ -30,6 +36,10 @@ public class GameTaskObject : MonoBehaviour
         switch (actionAttributes["ActionType"])
         {
             case "SetTransform":
+                if (ControllingPlayerID == GetPlayerID())
+                {
+                    return true;
+                }
                 return PerformTransformSet(actionAttributes);
             default:
                 return false;
@@ -75,7 +85,15 @@ public class GameTaskObject : MonoBehaviour
 
     protected string EncodeTransform()
     {
-        return $"ActionType:SetTransform;Position:{GameEvent.EncodePosition(transform.position)};Rotation:{GameEvent.EncodeRotation(transform.rotation)}";
+        string velocityString = "";
+        Rigidbody rigidbody = transform.GetComponent<Rigidbody>();
+        if (rigidbody is not null)
+        {
+            string velocityEncoded = GameEvent.EncodeVector3(rigidbody.linearVelocity);
+            velocityString = "Velocity:" + velocityEncoded;
+        }
+
+        return $"ActionType:SetTransform;Position:{GameEvent.EncodeVector3(transform.position)};Rotation:{GameEvent.EncodeQuaternion(transform.rotation)};{velocityString};";
     }
 
     protected string EncodeCommonInformation(string encoding, bool temporary)

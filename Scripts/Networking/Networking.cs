@@ -68,6 +68,12 @@ namespace Networking
 
     public static class NetworkHelperFunctions
     {
+        static string GetHttpPrefix(bool secure)
+        {
+            if (secure) return "https://";
+            return "http://";
+        }
+
         public static Uri GetReceivingAddress(int portNumber, bool local = true, bool secureHttp = false)
         {
             if (!NetworkInterface.GetIsNetworkAvailable())
@@ -75,32 +81,34 @@ namespace Networking
                 throw new IOException("Network unavailable.");
             }
 
-            IPHostEntry ipEntry = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (IPAddress address in ipEntry.AddressList)
+            if (local)
             {
-                if (address.AddressFamily == AddressFamily.InterNetwork)
+                IPHostEntry ipEntry = Dns.GetHostEntry(Dns.GetHostName());
+                foreach (IPAddress address in ipEntry.AddressList)
                 {
-                    string httpPrefix;
-                    if (secureHttp)
+                    if (address.AddressFamily == AddressFamily.InterNetwork)
                     {
-                        httpPrefix = "https://";
+                        return new Uri(GetHttpPrefix(secureHttp) + address + ":" + portNumber.ToString());
                     }
-                    else
-                    {
-                        httpPrefix = "http://";
-                    }
-
-                    return new Uri(httpPrefix + address + ":" + portNumber.ToString());
                 }
+                throw new IOException("Address not found.");
             }
-            throw new IOException("Address not found.");
-
-            //throw new NotImplementedException("Global IP address search not supported.");
+            else
+            {
+                string address = new WebClient().DownloadString("http://icanhazip.com").Trim();
+                return new Uri(GetHttpPrefix(secureHttp) + address + ":" + portNumber.ToString());
+            }
         }
 
-        public static Uri GetUriFromAddress(string address)
+        public static string GetAddressInFormatForListener(Uri address)
         {
-            return new Uri("http://" + address);
+            string[] adressParts = address.ToString().Split(":");
+            return $"{adressParts[0]}://*:{adressParts[2]}";
+        }
+
+        public static Uri GetUriFromAddress(string address, bool secureHttp = false)
+        {
+            return new Uri(GetHttpPrefix(secureHttp) + address);
         }
 
         public static int GetRandomFreePort()
@@ -184,7 +192,7 @@ namespace Networking
             }
             else
             {
-                storage = new ConstantCapacityDataStorage<DataToken>(10);
+                storage = new ConstantCapacityDataStorage<DataToken>(100);
             }
 
             storagePusher = storage.Pusher;
@@ -206,7 +214,7 @@ namespace Networking
         void Listen()
         {
             listener = new HttpListener();
-            listener.Prefixes.Add(address.ToString());
+            listener.Prefixes.Add(NetworkHelperFunctions.GetAddressInFormatForListener(address));
             listener.Start();
 
             Debug.Log($"Receiving started at {address}");

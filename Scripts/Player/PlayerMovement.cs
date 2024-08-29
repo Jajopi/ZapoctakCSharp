@@ -20,7 +20,7 @@ public class PlayerMovement : MonoBehaviour
     float jumpCooldown = 0.1f;
     float jumpCooldownRemainingTime;
 
-    float sendTransformEvery_seconds = 0.05f;
+    float sendTransformEvery_seconds = 0.1f;
     float sendTransformTimer = 0f;
     GameTaskObject gameTask;
 
@@ -164,13 +164,22 @@ public class PlayerMovement : MonoBehaviour
         TrySendTransform();
     }
 
-    void OnDisable()
+    /*void OnDisable()
     {
         transform.GetComponent<Rigidbody>().useGravity = false;
-    }
+    }*/
 
     void OnDestroy()
     {
         Cursor.lockState = CursorLockMode.None;
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        GameTaskObject gameTaskObject = other.gameObject.GetComponent<GameTaskObject>();
+        if (gameTaskObject is not null)
+        {
+            gameTaskObject.Activate();
+        }
     }
 }

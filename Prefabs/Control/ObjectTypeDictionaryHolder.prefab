@@ -52,3 +52,7 @@ MonoBehaviour:
       obj: {fileID: 1982317608543558136, guid: b190d99ae37200a47911b02ddf95cf7d, type: 3}
     - name: Elevator
       obj: {fileID: 3377349202115734061, guid: ae752fab4d578084ca01ad48865a7dae, type: 3}
+    - name: ElevatorSwitch
+      obj: {fileID: 5679153644806222466, guid: c9183c16a055bba43bebda81a5970918, type: 3}
+    - name: Tunel
+      obj: {fileID: 5241353452256542275, guid: 55666951a9a89a24f89d995965620cd4, type: 3}

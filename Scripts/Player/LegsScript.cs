@@ -5,7 +5,7 @@ public class LegsScript : MonoBehaviour
     PlayerMovement playerMovementScript;
     int objectsTouched = 0;
 
-    void Start()
+    void Awake()
     {
         playerMovementScript = transform.parent.GetComponent<PlayerMovement>();
     }
@@ -13,15 +13,17 @@ public class LegsScript : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         objectsTouched++;
+        playerMovementScript.SetLegsTouchingFloor(objectsTouched > 1);
     }
 
     void OnTriggerExit(Collider other)
     {
         objectsTouched--;
+        playerMovementScript.SetLegsTouchingFloor(objectsTouched > 1);
     }
 
     void Update()
     {
-        playerMovementScript.SetLegsTouchingFloor(objectsTouched > 1);
+        
     }
 }

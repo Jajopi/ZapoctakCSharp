@@ -35,8 +35,8 @@ public class GameEventReceiverClient : GameEventReceiver
         string objectType = creationAttributes["ObjectType"];
         GameObject originalObject = typeNameToObjectDictionary[objectType];
 
-        Vector3 position = GameEvent.ParseEventPosition(creationAttributes["ObjectPosition"]);
-        Quaternion rotation = GameEvent.ParseEventRotation(creationAttributes["ObjectRotation"]);
+        Vector3 position = GameEvent.ParseVector3(creationAttributes["ObjectPosition"]);
+        Quaternion rotation = GameEvent.ParseQuaternion(creationAttributes["ObjectRotation"]);
         GameObject newObject = Instantiate(originalObject, position, rotation);
 
         int objectID = int.Parse(creationAttributes["ObjectID"]);

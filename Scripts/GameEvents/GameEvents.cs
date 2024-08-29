@@ -29,31 +29,31 @@ namespace GameEvents
             return "Invalid";
         }
 
-        public static Vector3 ParseEventPosition(string positionString)
+        public static Vector3 ParseVector3(string encodedString)
         {
-            string[] coordinates = positionString.Split('~');
+            string[] coordinates = encodedString.Split('~');
             return new Vector3(float.Parse(coordinates[0]),
                                float.Parse(coordinates[1]),
                                float.Parse(coordinates[2]));
         }
 
-        public static string EncodePosition(Vector3 position)
+        public static string EncodeVector3(Vector3 vector)
         {
-            return $"{position.x}~{position.y}~{position.z}";
+            return $"{vector.x}~{vector.y}~{vector.z}";
         }
 
-        public static Quaternion ParseEventRotation(string rotationString)
+        public static Quaternion ParseQuaternion(string encodedString)
         {
-            string[] coordinates = rotationString.Split('~');
+            string[] coordinates = encodedString.Split('~');
             return new Quaternion(float.Parse(coordinates[0]),
                                float.Parse(coordinates[1]),
                                float.Parse(coordinates[2]),
                                float.Parse(coordinates[3]));
         }
 
-        public static string EncodeRotation(Quaternion rotation)
+        public static string EncodeQuaternion(Quaternion quaternion)
         {
-            return $"{rotation[0]}~{rotation[1]}~{rotation[2]}~{rotation[3]}";
+            return $"{quaternion[0]}~{quaternion[1]}~{quaternion[2]}~{quaternion[3]}";
         }
 
         /*public static List<TValue> ParseList<TValue>(string listString) where TValue : IParsable<TValue>

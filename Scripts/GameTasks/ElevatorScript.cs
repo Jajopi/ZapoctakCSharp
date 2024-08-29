@@ -1,35 +1,60 @@
 using UnityEngine;
+using System.Collections.Generic;
+using GameEvents;
 
-public class ElevatorScript : MonoBehaviour
+public class ElevatorScript : GameTaskObject
 {
-    public float TargetHeight { get; private set; }
+    int switchPosition;
+    List<float> positionValues = new List<float>();
+
     public float maxSpeed = 2f;
-    public float speedMultiplier = 1f;
-    public float ActualSpeed { get { return maxSpeed * speedMultiplier; } }
-
-    void Start()
-    {
-        TargetHeight = 100;
-    }
-
-    float GetMoveStep()
-    {
-        return Mathf.Max(Mathf.Abs(transform.position.y - TargetHeight), ActualSpeed) * Time.deltaTime *
-                (transform.position.y > TargetHeight ? -1 : 1);
-    }
+    public float ActualSpeed { get { return maxSpeed * GetGlobalSpeed(); } }
 
     void Update()
     {
-        if (transform.position.y != TargetHeight)
+        if (positionValues.Count > 0)
         {
-            transform.position += new Vector3(0,
-                                              GetMoveStep(),
-                                              0);
+            transform.position = Vector3.MoveTowards(transform.position,
+                                                     new Vector3(transform.position.x,
+                                                                 positionValues[switchPosition],
+                                                                 transform.position.z),
+                                                     ActualSpeed * Time.deltaTime);
         }
     }
 
-    public void ChangeTargetHeight(float newTargetHeight)
+    float GetGlobalSpeed()
     {
-        TargetHeight = newTargetHeight;
-    } 
+        return 1;
+    }
+
+    bool PerformSwitchValuesSet(List<float> values)
+    {
+        positionValues = values;
+        return true;
+    }
+
+    public bool PerformSwitchToggle(int newPosition)
+    {
+        if (newPosition < 0 || newPosition >= positionValues.Count)
+        {
+            return false;
+        }
+
+        switchPosition = newPosition;
+
+        return true;
+    }
+
+    public override bool PerformAction(Dictionary<string, string> actionAttributes)
+    {
+        switch (actionAttributes["ActionType"])
+        {
+            case "CycleSwitch":
+                return PerformSwitchToggle((switchPosition + 1) % positionValues.Count);
+            case "SetSwitchValues":
+                return PerformSwitchValuesSet(GameEvent.ParseListOfFloats(actionAttributes["SwitchValues"]));
+            default:
+                return base.PerformAction(actionAttributes);
+        }
+    }
 }
