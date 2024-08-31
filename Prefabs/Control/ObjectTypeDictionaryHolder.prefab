@@ -52,7 +52,15 @@ MonoBehaviour:
       obj: {fileID: 1982317608543558136, guid: b190d99ae37200a47911b02ddf95cf7d, type: 3}
     - name: Elevator
       obj: {fileID: 3377349202115734061, guid: ae752fab4d578084ca01ad48865a7dae, type: 3}
-    - name: ElevatorSwitch
+    - name: Switch
       obj: {fileID: 5679153644806222466, guid: c9183c16a055bba43bebda81a5970918, type: 3}
     - name: Tunel
       obj: {fileID: 5241353452256542275, guid: 55666951a9a89a24f89d995965620cd4, type: 3}
+    - name: Ship
+      obj: {fileID: 1632605120903368872, guid: 9bd5c8b8ad3cb2d4087c764196d8e9f2, type: 3}
+    - name: Door
+      obj: {fileID: 3354360764614039943, guid: ae6249906c6277e47bd7efe23145840a, type: 3}
+    - name: DoorPanel
+      obj: {fileID: 551834402107508575, guid: 5ef3b46fa152fed418f5bb16e563b6c1, type: 3}
+    - name: ShipController
+      obj: {fileID: 3748789656894546335, guid: 829ceb5a77b3d784682d411420fe3e7e, type: 3}

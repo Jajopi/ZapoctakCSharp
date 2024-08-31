@@ -24,6 +24,8 @@ public class PlayerMovement : MonoBehaviour
     float sendTransformTimer = 0f;
     GameTaskObject gameTask;
 
+    float interactionDistance = 4f;
+
     void Start()
     {
         movementEnabled = true;
@@ -137,18 +139,30 @@ public class PlayerMovement : MonoBehaviour
         TryJump();
     }
 
-    void SendTransform()
-    {
-        gameTask.SendTransformUpdate();
-    }
-
     void TrySendTransform()
     {
         sendTransformTimer += Time.deltaTime;
         if (sendTransformTimer > sendTransformEvery_seconds)
         {
             sendTransformTimer -= sendTransformEvery_seconds;
-            SendTransform();
+
+            gameTask.SendTransformUpdate();
+        }
+    }
+
+    void TryInteract()
+    {
+        if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Mouse0))
+        {
+            RaycastHit hit;
+            if (Physics.Raycast(playerHead.position, playerHead.TransformDirection(Vector3.forward), out hit, interactionDistance))
+            {
+                GameTaskObject gameTaskObject = hit.collider.gameObject.GetComponent<GameTaskObject>();
+                if (gameTaskObject is not null)
+                {
+                    gameTaskObject.Activate();
+                }
+            }
         }
     }
 
@@ -162,12 +176,14 @@ public class PlayerMovement : MonoBehaviour
         }
 
         TrySendTransform();
-    }
 
-    /*void OnDisable()
-    {
-        transform.GetComponent<Rigidbody>().useGravity = false;
-    }*/
+        TryInteract();
+
+        if (transform.position.y < -5)
+        {
+            transform.position = new Vector3(0, 0, 0);
+        }
+    }
 
     void OnDestroy()
     {
@@ -179,7 +195,7 @@ public class PlayerMovement : MonoBehaviour
         GameTaskObject gameTaskObject = other.gameObject.GetComponent<GameTaskObject>();
         if (gameTaskObject is not null)
         {
-            gameTaskObject.Activate();
+            gameTaskObject.ActivateOnTouch();
         }
     }
 }

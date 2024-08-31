@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using GameEvents;
 
-public class ElevatorSwitchScript : GameTaskObject
+public class SwitchScript : GameTaskObject
 {
     GameTaskObject targetObject;
     float activationCooldown;
@@ -10,10 +10,9 @@ public class ElevatorSwitchScript : GameTaskObject
 
     bool activated = false;
 
-    float movementSpeed = 0.05f;
+    //float movementSpeed = 0.05f;
     Vector3 positionActivated = new Vector3(0, 0.2f, 0);
     Vector3 positionDeactivated = new Vector3(0, 1f, 0);
-
     Transform movingPart;
 
     void Start()
@@ -24,9 +23,10 @@ public class ElevatorSwitchScript : GameTaskObject
     void TryMoveComponent()
     {
         Vector3 targetPosition = activated ? positionActivated : positionDeactivated;
-        movingPart.localPosition = Vector3.MoveTowards(movingPart.localPosition,
+        /*movingPart.localPosition = Vector3.MoveTowards(movingPart.localPosition,
                                                        targetPosition,
-                                                       movementSpeed * Time.deltaTime);
+                                                       movementSpeed * Time.deltaTime);*/
+        movingPart.localPosition = targetPosition;
     }
 
     void Update()
@@ -70,9 +70,14 @@ public class ElevatorSwitchScript : GameTaskObject
 
     public override void Activate()
     {
-        if (activationCooldown == 0)
+        if (activationCooldown <= 0)
         {
-            SendEncodedAction("ActionType:CycleSwitch", true);
+            SendEncodedAction("ActionType:CycleSwitch");
         }
+    }
+
+    public override void ActivateOnTouch()
+    {
+        Activate();
     }
 }

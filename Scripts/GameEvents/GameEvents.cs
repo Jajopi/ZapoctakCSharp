@@ -3,38 +3,46 @@ using System.Text;
 using System.Collections.Generic;
 using UnityEngine;
 using Networking;
+using System.Globalization;
 
 namespace GameEvents
 {
     public struct GameEvent
     {
-        public enum EventTypes
+        public enum EventType
         {
-            Connect, Create, Action, Invalid
+            Connect, Create, Action, Control, Invalid
         }
 
-        static EventTypes ParseEventType(string eventString)
+        static EventType ParseEventType(string eventString)
         {
-            if (eventString == "Connect") return EventTypes.Connect;
-            if (eventString == "Create") return EventTypes.Create;
-            if (eventString == "Action") return EventTypes.Action;
-            return EventTypes.Invalid;
+            if (eventString == "Connect") return EventType.Connect;
+            if (eventString == "Create") return EventType.Create;
+            if (eventString == "Action") return EventType.Action;
+            if (eventString == "Control") return EventType.Control;
+            return EventType.Invalid;
         }
 
-        static string EncodeEventType(EventTypes eventType)
+        static string EncodeEventType(EventType eventType)
         {
-            if (eventType == EventTypes.Connect) return "Connect";
-            if (eventType == EventTypes.Create) return "Create";
-            if (eventType == EventTypes.Action) return "Action";
+            if (eventType == EventType.Connect) return "Connect";
+            if (eventType == EventType.Create) return "Create";
+            if (eventType == EventType.Action) return "Action";
+            if (eventType == EventType.Control) return "Control";
             return "Invalid";
+        }
+
+        public static string StandardizeFloats(string stringWithFloats)
+        {
+            return stringWithFloats.Replace(',', '.');
         }
 
         public static Vector3 ParseVector3(string encodedString)
         {
-            string[] coordinates = encodedString.Split('~');
-            return new Vector3(float.Parse(coordinates[0]),
-                               float.Parse(coordinates[1]),
-                               float.Parse(coordinates[2]));
+            string[] coordinates = StandardizeFloats(encodedString).Split('~');
+            return new Vector3(float.Parse(coordinates[0], CultureInfo.InvariantCulture),
+                               float.Parse(coordinates[1], CultureInfo.InvariantCulture),
+                               float.Parse(coordinates[2], CultureInfo.InvariantCulture));
         }
 
         public static string EncodeVector3(Vector3 vector)
@@ -44,16 +52,21 @@ namespace GameEvents
 
         public static Quaternion ParseQuaternion(string encodedString)
         {
-            string[] coordinates = encodedString.Split('~');
-            return new Quaternion(float.Parse(coordinates[0]),
-                               float.Parse(coordinates[1]),
-                               float.Parse(coordinates[2]),
-                               float.Parse(coordinates[3]));
+            string[] coordinates = StandardizeFloats(encodedString).Split('~');
+            return new Quaternion(float.Parse(coordinates[0], CultureInfo.InvariantCulture),
+                                  float.Parse(coordinates[1], CultureInfo.InvariantCulture),
+                                  float.Parse(coordinates[2], CultureInfo.InvariantCulture),
+                                  float.Parse(coordinates[3], CultureInfo.InvariantCulture));
         }
 
         public static string EncodeQuaternion(Quaternion quaternion)
         {
             return $"{quaternion[0]}~{quaternion[1]}~{quaternion[2]}~{quaternion[3]}";
+        }
+
+        public static string EulerRotation(string eulerAngles)
+        {
+            return EncodeQuaternion(Quaternion.Euler(ParseVector3(eulerAngles)));
         }
 
         /*public static List<TValue> ParseList<TValue>(string listString) where TValue : IParsable<TValue>
@@ -69,9 +82,9 @@ namespace GameEvents
         public static List<float> ParseListOfFloats(string listString)
         {
             List<float> values = new List<float>();
-            foreach (string rawValue in listString.Split("~"))
+            foreach (string rawValue in StandardizeFloats(listString).Split("~"))
             {
-                values.Add(float.Parse(rawValue));
+                values.Add(float.Parse(rawValue, CultureInfo.InvariantCulture));
             }
             return values;
         }
@@ -86,7 +99,7 @@ namespace GameEvents
             return sb.ToString();
         }
 
-        public EventTypes Type;
+        public EventType Type;
         public bool IsTemporary;
         public Dictionary<string, string> EventAttributes;
 
@@ -98,7 +111,7 @@ namespace GameEvents
             {
                 string[] values = encoding.Split(';');
                 Type = ParseEventType(values[0]);
-                if (Type == EventTypes.Invalid)
+                if (Type == EventType.Invalid)
                 {
                     throw new FormatException("Event type is Invalid");
                 }

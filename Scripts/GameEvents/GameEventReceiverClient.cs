@@ -7,12 +7,14 @@ using GameEvents;
 public class GameEventReceiverClient : GameEventReceiver
 {
     NetworkClient networkClient;
+    MenuController menuController;
 
     Dictionary<int, GameTaskObject> createdObjects = new Dictionary<int, GameTaskObject>();
 
     void Awake()
     {
         networkClient = transform.GetComponent<NetworkClient>();
+        menuController = GameObject.FindFirstObjectByType<MenuController>();
         typeNameToObjectDictionary = GameObject.FindFirstObjectByType<ObjectTypeDictionaryHolder>().GetDictionary();
     }
 
@@ -21,11 +23,18 @@ public class GameEventReceiverClient : GameEventReceiver
         return createdObjects[objectID];
     }
 
+    void DisplayServerAddress()
+    {
+        menuController.UpdateServerAddress(PlayerPrefs.GetString("ServerAddress"));
+    }
+
     void HandleConnection(GameEvent gameEvent)
     {
         networkClient.SetClientID(int.Parse(gameEvent.EventAttributes["ClientID"]));
         
         GameObject.FindFirstObjectByType<ClientGameUI>().DestroyWaitingObject();
+
+        DisplayServerAddress();
     }
 
     void CreateNewGameTaskObject(GameEvent gameEvent)
@@ -49,13 +58,13 @@ public class GameEventReceiverClient : GameEventReceiver
 
         createdObjects.Add(objectID, newObject.GetComponent<GameTaskObject>());
 
-        if (creationAttributes.ContainsKey("ActionType"))
+        /*if (creationAttributes.ContainsKey("ActionType"))
         {
             PerformActionOnObject(gameEvent);
-        }
+        }*/
     }
 
-    void PerformActionOnObject(GameEvent gameEvent)
+    void PerformAction(GameEvent gameEvent)
     {
         Dictionary<string, string> actionAttributes = gameEvent.EventAttributes;
 
@@ -63,19 +72,34 @@ public class GameEventReceiverClient : GameEventReceiver
         gameTaskObject.PerformAction(actionAttributes);
     }
 
+    void PerformControlAction(GameEvent gameEvent)
+    {
+        Dictionary<string, string> actionAttributes = gameEvent.EventAttributes;
+
+        if (actionAttributes["ActionType"] == "UpdateScore")
+        {
+            string newScore = actionAttributes["NewScore"];
+            menuController.UpdateScore(newScore);
+        }
+    }
+
     protected override void PerformEvent(GameEvent gameEvent)
     {
-        if (gameEvent.Type == GameEvent.EventTypes.Connect)
+        if (gameEvent.Type == GameEvent.EventType.Connect)
         {
             HandleConnection(gameEvent);
         }
-        else if (gameEvent.Type == GameEvent.EventTypes.Create)
+        else if (gameEvent.Type == GameEvent.EventType.Create)
         {
             CreateNewGameTaskObject(gameEvent);
         }
-        else if (gameEvent.Type == GameEvent.EventTypes.Action)
+        else if (gameEvent.Type == GameEvent.EventType.Action)
         {
-            PerformActionOnObject(gameEvent);
+            PerformAction(gameEvent);
+        }
+        else if (gameEvent.Type == GameEvent.EventType.Control)
+        {
+            PerformControlAction(gameEvent);
         }
         else
         {

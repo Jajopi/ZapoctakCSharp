@@ -122,6 +122,11 @@ public class GameTaskObject : MonoBehaviour
         return;
     }
 
+    public virtual void ActivateOnTouch()
+    {
+        return;
+    }
+
     protected GameTaskObject GetObjectByID(int objectID)
     {
         return eventReceiver.GetObjectByID(objectID);

@@ -7,13 +7,21 @@ using GameEvents;
 public class GameEventReceiverServer : GameEventReceiver
 {
     NetworkServer networkServer;
+    MenuController menuController;
+
 
     List<GameTaskObject> createdObjects = new List<GameTaskObject>();
 
     void Awake()
     {
         networkServer = transform.GetComponent<NetworkServer>();
+        menuController = GameObject.FindFirstObjectByType<MenuController>();
         typeNameToObjectDictionary = GameObject.FindFirstObjectByType<ObjectTypeDictionaryHolder>().GetDictionary();
+    }
+
+    void Start()
+    {
+        menuController.UpdateServerAddress(networkServer.GetReceivingAddress().ToString());
     }
 
     public override GameTaskObject GetObjectByID(int objectID)
@@ -23,7 +31,7 @@ public class GameEventReceiverServer : GameEventReceiver
 
     void CreateNewPlayer(int controllerID)
     {
-        CreateNewGameTaskObject(new GameEvent($"Create;ObjectType:Player;ControllerID:{controllerID};ObjectPosition:0~10~0;ObjectRotation:0~0~0~0"));
+        CreateNewGameTaskObject(new GameEvent($"Create;ObjectType:Player;ControllerID:{controllerID};ObjectPosition:0~1~5;ObjectRotation:0~0~0~0"));
     }
 
     void ConnectNewClient(GameEvent gameEvent)
@@ -74,19 +82,36 @@ public class GameEventReceiverServer : GameEventReceiver
         }
     }
 
+    void PerformControlAction(GameEvent gameEvent)
+    {
+        Dictionary<string, string> actionAttributes = gameEvent.EventAttributes;
+
+        if (actionAttributes["ActionType"] == "UpdateScore")
+        {
+            string newScore = actionAttributes["NewScore"];
+            menuController.UpdateScore(newScore);
+        }
+
+        networkServer.SendEvent(gameEvent);
+    }
+
     protected override void PerformEvent(GameEvent gameEvent)
     {
-        if (gameEvent.Type == GameEvent.EventTypes.Connect)
+        if (gameEvent.Type == GameEvent.EventType.Connect)
         {
             ConnectNewClient(gameEvent);
         }
-        else if (gameEvent.Type == GameEvent.EventTypes.Create)
+        else if (gameEvent.Type == GameEvent.EventType.Create)
         {
             CreateNewGameTaskObject(gameEvent);
         }
-        else if (gameEvent.Type == GameEvent.EventTypes.Action)
+        else if (gameEvent.Type == GameEvent.EventType.Action)
         {
             PerformActionOnObject(gameEvent);
+        }
+        else if (gameEvent.Type == GameEvent.EventType.Control)
+        {
+            PerformControlAction(gameEvent);
         }
         else
         {
