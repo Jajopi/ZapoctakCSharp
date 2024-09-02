@@ -11,12 +11,13 @@ namespace GameEvents
     {
         public enum EventType
         {
-            Connect, Create, Action, Control, Invalid
+            Connect, Disconnect, Create, Action, Control, Invalid
         }
 
         static EventType ParseEventType(string eventString)
         {
             if (eventString == "Connect") return EventType.Connect;
+            if (eventString == "Disconnect") return EventType.Disconnect;
             if (eventString == "Create") return EventType.Create;
             if (eventString == "Action") return EventType.Action;
             if (eventString == "Control") return EventType.Control;
@@ -26,6 +27,7 @@ namespace GameEvents
         static string EncodeEventType(EventType eventType)
         {
             if (eventType == EventType.Connect) return "Connect";
+            if (eventType == EventType.Disconnect) return "Disconnect";
             if (eventType == EventType.Create) return "Create";
             if (eventType == EventType.Action) return "Action";
             if (eventType == EventType.Control) return "Control";

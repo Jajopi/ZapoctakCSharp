@@ -29,10 +29,11 @@ public class ServerGameInitializer : MonoBehaviour
 
     void CreateLevel()
     {
+        // Ship hull
         SendEvent($"Create;ObjectType:Ship;ObjectPosition:0~-0.2~0;ObjectRotation:0~0~0~0");
 
+        // Player
         SendEvent($"Create;ObjectType:Player;ControllerID:0;ObjectPosition:0~1~5;ObjectRotation:0~0~0~0");
-
 
         // Elevators
         SendEvent($"Create;ObjectType:Elevator;ObjectPosition:9~0~0;ObjectRotation:0~0~0~0");
@@ -50,31 +51,37 @@ public class ServerGameInitializer : MonoBehaviour
         SendEvent($"Create;ObjectType:Switch;ObjectPosition:0~0~-6;ObjectRotation:0~0~0~0");
         SendEvent($"Action;ObjectID:{LastIndex};ActionType:SetTarget;TargetID:{LastIndex - 1}");
 
-
         // Doors
         for (float height = 0; height < 11; height += 5)
         {
-            SendEvent($"Create;ObjectType:Door;ObjectPosition:0~{height}~-15;ObjectRotation:0~0~0~0");
+            SendEvent($"Create;ObjectType:Door;ObjectPosition:15~{height}~0;ObjectRotation:{EulerRotation("0~90~0")}");
+            SendEvent($"Create;ObjectType:Switch;ObjectPosition:13~{height + 0.2f}~-4;ObjectRotation:0~0~0~0");
+            SendEvent($"Action;ObjectID:{LastIndex};ActionType:SetTarget;TargetID:{LastIndex - 1}");
+            SendEvent($"Create;ObjectType:Switch;ObjectPosition:17~{height + 0.2f}~4;ObjectRotation:0~0~0~0");
+            SendEvent($"Action;ObjectID:{LastIndex};ActionType:SetTarget;TargetID:{LastIndex - 2}");
+
+            /*SendEvent($"Create;ObjectType:Door;ObjectPosition:0~{height}~-15;ObjectRotation:0~0~0~0");
             SendEvent($"Create;ObjectType:Switch;ObjectPosition:-4~{height + 0.2f}~-13;ObjectRotation:0~0~0~0");
             SendEvent($"Action;ObjectID:{LastIndex};ActionType:SetTarget;TargetID:{LastIndex - 1}");
             SendEvent($"Create;ObjectType:Switch;ObjectPosition:4~{height + 0.2f}~-17;ObjectRotation:0~0~0~0");
             SendEvent($"Action;ObjectID:{LastIndex};ActionType:SetTarget;TargetID:{LastIndex - 2}");
+            */
 
             SendEvent($"Create;ObjectType:Door;ObjectPosition:-15~{height}~0;ObjectRotation:{EulerRotation("0~90~0")}");
             SendEvent($"Create;ObjectType:Switch;ObjectPosition:-13~{height + 0.2f}~4;ObjectRotation:0~0~0~0");
             SendEvent($"Action;ObjectID:{LastIndex};ActionType:SetTarget;TargetID:{LastIndex - 1}");
             SendEvent($"Create;ObjectType:Switch;ObjectPosition:-17~{height + 0.2f}~-4;ObjectRotation:0~0~0~0");
             SendEvent($"Action;ObjectID:{LastIndex};ActionType:SetTarget;TargetID:{LastIndex - 2}");
-
-            SendEvent($"Create;ObjectType:Door;ObjectPosition:15~{height}~0;ObjectRotation:{EulerRotation("0~90~0")}");
-            SendEvent($"Create;ObjectType:Switch;ObjectPosition:13~{height + 0.2f}~-4;ObjectRotation:0~0~0~0");
-            SendEvent($"Action;ObjectID:{LastIndex};ActionType:SetTarget;TargetID:{LastIndex - 1}");
-            SendEvent($"Create;ObjectType:Switch;ObjectPosition:17~{height + 0.2f}~4;ObjectRotation:0~0~0~0");
-            SendEvent($"Action;ObjectID:{LastIndex};ActionType:SetTarget;TargetID:{LastIndex - 2}");
         }
 
-        SendEvent($"Create;ObjectType:ShipController;ObjectPosition:0~0~10;ObjectRotation:0~0~0~0");
+        // Ship controller
+        SendEvent($"Create;ObjectType:ShipController;ObjectPosition:0~5~10;ObjectRotation:0~0~0~0");
 
+        // First four broken panels
+        SendEvent($"Create;ObjectType:DoorPanel;ObjectPosition:1.5~1~10;ObjectRotation:{EulerRotation("0~90~0")}");
+        SendEvent($"Create;ObjectType:OxyGenerator;ObjectPosition:0.5~1~10;ObjectRotation:{EulerRotation("0~90~0")}");
+        SendEvent($"Create;ObjectType:MotorReactor;ObjectPosition:-0.5~1~10;ObjectRotation:{EulerRotation("0~90~0")}");
+        SendEvent($"Create;ObjectType:WireBox;ObjectPosition:-1.5~1~10;ObjectRotation:{EulerRotation("0~90~0")}");
     }
 
     void Start()
@@ -82,10 +89,5 @@ public class ServerGameInitializer : MonoBehaviour
         eventReceiver = GameObject.FindFirstObjectByType<GameEventReceiverServer>();
 
         CreateLevel();
-    }
-
-    void Update()
-    {
-
     }
 }

@@ -60,6 +60,7 @@ public class NetworkServer : MonoBehaviour
         string data = sentDataLog.ToString();
         if (data.Length > 0)
         {
+            Debug.Log(data);
             networkSender.SendData(new DataToken(data), clientAddress);
         }
         return newClientID;
@@ -72,8 +73,14 @@ public class NetworkServer : MonoBehaviour
 
     void SendDataToAllClients(DataToken data)
     {
+        //Debug.Log(data);
         foreach (Uri client in clients)
         {
+            if (client is null)
+            {
+                continue;
+            }
+
             networkSender.SendData(data, client);
         }
     }
@@ -91,5 +98,11 @@ public class NetworkServer : MonoBehaviour
     public Uri GetReceivingAddress()
     {
         return networkReceiver.GetReceivingAddress();
+    }
+
+    public void RemoveClient(int clientID)
+    {
+        Debug.Log(clientID - 1);
+        clients[clientID - 1] = null;
     }
 }

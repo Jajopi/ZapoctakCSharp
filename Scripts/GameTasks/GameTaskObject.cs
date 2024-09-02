@@ -83,6 +83,11 @@ public class GameTaskObject : MonoBehaviour
         return networkClient.GetClientID();
     }
 
+    public bool IsControllingPlayer()
+    {
+        return ControllingPlayerID == GetPlayerID();
+    }
+
     protected string EncodeTransform()
     {
         string velocityString = "";
@@ -109,7 +114,12 @@ public class GameTaskObject : MonoBehaviour
 
     protected void SendEncodedAction(string encoding, bool temporary = false)
     {
-        networkClient.SendEvent(new GameEvent(EncodeCommonInformation(encoding, temporary)));
+        SendArbitraryEvent(new GameEvent(EncodeCommonInformation(encoding, temporary)));
+    }
+
+    public void SendArbitraryEvent(GameEvent gameEvent)
+    {
+        networkClient.SendEvent(gameEvent);
     }
 
     public void SendTransformUpdate()

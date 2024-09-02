@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Networking;
 using GameEvents;
+using System.Globalization;
 
 public class GameEventReceiverClient : GameEventReceiver
 {
@@ -31,10 +32,17 @@ public class GameEventReceiverClient : GameEventReceiver
     void HandleConnection(GameEvent gameEvent)
     {
         networkClient.SetClientID(int.Parse(gameEvent.EventAttributes["ClientID"]));
-        
+
         GameObject.FindFirstObjectByType<ClientGameUI>().DestroyWaitingObject();
 
         DisplayServerAddress();
+    }
+
+    void DestroyPlayer(GameEvent gameEvent)
+    {
+        Dictionary<string, string> attributes = gameEvent.EventAttributes;
+
+        GameObject.Destroy(GetObjectByID(int.Parse(attributes["ObjectID"])).gameObject);
     }
 
     void CreateNewGameTaskObject(GameEvent gameEvent)
@@ -76,10 +84,31 @@ public class GameEventReceiverClient : GameEventReceiver
     {
         Dictionary<string, string> actionAttributes = gameEvent.EventAttributes;
 
-        if (actionAttributes["ActionType"] == "UpdateScore")
+        if (actionAttributes["ActionType"] == "UpdateDistance")
         {
-            string newScore = actionAttributes["NewScore"];
-            menuController.UpdateScore(newScore);
+            float distance = float.Parse(GameEvent.StandardizeFloats(
+                    actionAttributes["NewDistance"]),
+                    CultureInfo.InvariantCulture);
+            menuController.UpdateDistance(distance);
+
+            PlayerPrefs.SetFloat("Distance", distance);
+            if (distance > PlayerPrefs.GetFloat("BestDistance"))
+            {
+                PlayerPrefs.SetFloat("BestDistance", distance);
+            }
+        }
+
+        if (actionAttributes["ActionType"] == "UpdateOxygen")
+        {
+            float oxygen = float.Parse(GameEvent.StandardizeFloats(
+                    actionAttributes["NewOxygen"]),
+                    CultureInfo.InvariantCulture);
+            menuController.UpdateOxygen(oxygen);
+
+            if (oxygen <= 0)
+            {
+                menuController.ExitGame(true);
+            }
         }
     }
 
@@ -88,6 +117,10 @@ public class GameEventReceiverClient : GameEventReceiver
         if (gameEvent.Type == GameEvent.EventType.Connect)
         {
             HandleConnection(gameEvent);
+        }
+        else if (gameEvent.Type == GameEvent.EventType.Disconnect)
+        {
+            DestroyPlayer(gameEvent);
         }
         else if (gameEvent.Type == GameEvent.EventType.Create)
         {

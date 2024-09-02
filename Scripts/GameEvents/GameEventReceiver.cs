@@ -7,6 +7,7 @@ using GameEvents;
 public class GameEventReceiver : MonoBehaviour
 {
     protected Dictionary<string, GameObject> typeNameToObjectDictionary;
+    protected int playerCount = 0;
 
     public virtual GameTaskObject GetObjectByID(int objectID)
     {
@@ -31,5 +32,10 @@ public class GameEventReceiver : MonoBehaviour
             GameEvent gameEvent = new GameEvent(eventString);
             PerformEvent(gameEvent);
         }
+    }
+
+    public int GetPlayerCount()
+    {
+        return playerCount;
     }
 }

@@ -45,6 +45,7 @@ namespace LockFreeAsyncDataStorage
             {
                 if (!IsFree())
                 {
+                    Debug.Log(data);
                     throw new InvalidOperationException("DataStorage is fully occupied.");
                 }
                 //Debug.Log($"Pushing {data}.");

@@ -6,7 +6,7 @@ public class DoorScript : GameTaskObject
 {
     bool isOpen = false;
     float openTime;
-    float openTimeReset = 10f;
+    public float openTimeReset = 60f;
 
     Vector3 leftWingPositionActivated = new Vector3(5f, 2.5f, 0);
     Vector3 leftWingPositionDeactivated = new Vector3(2.5f, 2.5f, 0);
@@ -18,19 +18,22 @@ public class DoorScript : GameTaskObject
     float maxSpeed = 0.5f;
     public float ActualSpeed { get { return maxSpeed * GetGlobalSpeed(); } }
 
-    int lockCount = 0;
-    bool isReallyOpen { get { return lockCount == 0 && isOpen; } }
+    ShipController controller;
 
     void Start()
     {
         leftWing = transform.Find("LeftWing");
         rightWing = transform.Find("RightWing");
+
+        controller = GameObject.FindFirstObjectByType<ShipController>();
+
+        SetControllingPlayerID(0);
     }
 
     void UpdatePositions()
     {
-        Vector3 leftTargetPosition = isReallyOpen ? leftWingPositionActivated : leftWingPositionDeactivated;
-        Vector3 rightTargetPosition = isReallyOpen ? rightWingPositionActivated : rightWingPositionDeactivated;
+        Vector3 leftTargetPosition = isOpen ? leftWingPositionActivated : leftWingPositionDeactivated;
+        Vector3 rightTargetPosition = isOpen ? rightWingPositionActivated : rightWingPositionDeactivated;
 
         leftWing.localPosition = Vector3.MoveTowards(leftWing.localPosition,
                                                      leftTargetPosition,
@@ -41,61 +44,91 @@ public class DoorScript : GameTaskObject
                                                       ActualSpeed * Time.deltaTime);
     }
 
+    void TryCloseAfterTime()
+    {
+        if (!IsControllingPlayer())
+        {
+            return;
+        }
+
+        if (openTime > 0)
+        {
+            openTime -= Time.deltaTime;
+            if (openTime <= 0 && isOpen)
+            {
+                openTime = 0;
+                PerformSwitchToggle(false);
+            }
+        }
+    }
+
     void Update()
     {
-        openTime -= Time.deltaTime;
-        if (openTime <= 0)
-        {
-            openTime = 0;
-            isOpen = false;
-        }
+        TryCloseAfterTime();
 
         UpdatePositions();
     }
 
     float GetGlobalSpeed()
     {
-        return 1;
+        return controller.GetGlobalSpeed();
     }
 
-    bool PerformLock(bool unlock)
+    bool ShouldBeLocked()
     {
-        if (unlock)
-        {
-            lockCount--;
-            if (lockCount < 0)
-            {
-                lockCount = 0;
-            }
-        }
-        else
-        {
-            lockCount++;
-        }
-
-        return true;
+        return controller.ShouldDoorBeLocked();
     }
 
     public bool PerformSwitchToggle(bool newOpen)
     {
-        isOpen = newOpen;
-
-        if (newOpen)
+        if (!IsControllingPlayer())
         {
-            openTime = openTimeReset;
+            return false;
+        }
+
+        if (newOpen && !isOpen && !ShouldBeLocked())
+        {
+            SendEncodedAction("ActionType:Open");
+        }
+        else if (!newOpen && isOpen)
+        {
+            SendEncodedAction("ActionType:Close");
         }
 
         return true;
+    }
+
+    bool PerformClose()
+    {
+        if (isOpen)
+        {
+            isOpen = false;
+            return true;
+        }
+        return false;
+    }
+
+    bool PerformOpen()
+    {
+        if (!isOpen)
+        {
+            isOpen = true;
+            openTime = openTimeReset;
+            return true;
+        }
+        return false;
     }
 
     public override bool PerformAction(Dictionary<string, string> actionAttributes)
     {
         switch (actionAttributes["ActionType"])
         {
+            case "Close":
+                return PerformClose();
+            case "Open":
+                return PerformOpen();
             case "CycleSwitch":
                 return PerformSwitchToggle(!isOpen);
-            case "AddOrRemoveLock":
-                return PerformLock(actionAttributes["LockChange"] == "Add");
             default:
                 return base.PerformAction(actionAttributes);
         }

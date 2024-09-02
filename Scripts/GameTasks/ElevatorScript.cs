@@ -7,8 +7,15 @@ public class ElevatorScript : GameTaskObject
     int switchPosition;
     List<float> positionValues = new List<float>();
 
-    public float maxSpeed = 2f;
+    public float maxSpeed = 3f;
     public float ActualSpeed { get { return maxSpeed * GetGlobalSpeed(); } }
+
+    ShipController controller;
+
+    void Start()
+    {
+        controller = GameObject.FindFirstObjectByType<ShipController>();
+    }
 
     void Update()
     {
@@ -24,7 +31,7 @@ public class ElevatorScript : GameTaskObject
 
     float GetGlobalSpeed()
     {
-        return 1;
+        return controller.GetGlobalSpeed();
     }
 
     bool PerformSwitchValuesSet(List<float> values)

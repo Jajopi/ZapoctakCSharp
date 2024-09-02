@@ -33,8 +33,6 @@ public class PlayerMovement : MonoBehaviour
         playerHead = transform.Find("Head").Find("Camera");
 
         gameTask = gameObject.GetComponent<GameTaskObject>();
-
-        Cursor.lockState = CursorLockMode.Locked;
     }
 
     Vector2 GetStandardViewRotationCoordinates()
@@ -185,9 +183,9 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void OnDestroy()
+    public void Disconnect()
     {
-        Cursor.lockState = CursorLockMode.None;
+        gameTask.SendArbitraryEvent(new GameEvent($"Disconnect;ClientID:{gameTask.ControllingPlayerID};ObjectID:{gameTask.ObjectID}"));
     }
 
     void OnTriggerEnter(Collider other)

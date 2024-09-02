@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Networking;
 using GameEvents;
+using System.Globalization;
+
 
 public class GameEventReceiverServer : GameEventReceiver
 {
@@ -31,6 +33,7 @@ public class GameEventReceiverServer : GameEventReceiver
 
     void CreateNewPlayer(int controllerID)
     {
+        playerCount++;
         CreateNewGameTaskObject(new GameEvent($"Create;ObjectType:Player;ControllerID:{controllerID};ObjectPosition:0~1~5;ObjectRotation:0~0~0~0"));
     }
 
@@ -39,6 +42,16 @@ public class GameEventReceiverServer : GameEventReceiver
         int newClientID = networkServer.AddClient(new Uri(gameEvent.EventAttributes["ClientAddress"]));
 
         CreateNewPlayer(newClientID);
+    }
+
+    void DisconnectClient(GameEvent gameEvent)
+    {
+        Dictionary<string, string> attributes = gameEvent.EventAttributes;
+
+        GameObject.Destroy(GetObjectByID(int.Parse(attributes["ObjectID"])).gameObject);
+        networkServer.RemoveClient(int.Parse(attributes["ClientID"]));
+
+        networkServer.SendEvent(gameEvent);
     }
 
     void CreateNewGameTaskObject(GameEvent gameEvent)
@@ -86,10 +99,33 @@ public class GameEventReceiverServer : GameEventReceiver
     {
         Dictionary<string, string> actionAttributes = gameEvent.EventAttributes;
 
-        if (actionAttributes["ActionType"] == "UpdateScore")
+        if (actionAttributes["ActionType"] == "UpdateDistance")
         {
-            string newScore = actionAttributes["NewScore"];
-            menuController.UpdateScore(newScore);
+            float distance = float.Parse(GameEvent.StandardizeFloats(
+                    actionAttributes["NewDistance"]),
+                    CultureInfo.InvariantCulture);
+            menuController.UpdateDistance(distance);
+
+            PlayerPrefs.SetFloat("Distance", distance);
+            if (distance > PlayerPrefs.GetFloat("BestDistance"))
+            {
+                PlayerPrefs.SetFloat("BestDistance", distance);
+            }
+        }
+
+        if (actionAttributes["ActionType"] == "UpdateOxygen")
+        {
+            float oxygen = float.Parse(GameEvent.StandardizeFloats(
+                    actionAttributes["NewOxygen"]),
+                    CultureInfo.InvariantCulture);
+            menuController.UpdateOxygen(oxygen);
+
+            if (oxygen <= 0)
+            {
+                networkServer.SendEvent(gameEvent);
+                menuController.ExitGame(true);
+                return;
+            }
         }
 
         networkServer.SendEvent(gameEvent);
@@ -100,6 +136,10 @@ public class GameEventReceiverServer : GameEventReceiver
         if (gameEvent.Type == GameEvent.EventType.Connect)
         {
             ConnectNewClient(gameEvent);
+        }
+        else if (gameEvent.Type == GameEvent.EventType.Disconnect)
+        {
+            DisconnectClient(gameEvent);
         }
         else if (gameEvent.Type == GameEvent.EventType.Create)
         {
