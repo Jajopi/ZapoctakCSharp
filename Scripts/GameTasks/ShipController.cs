@@ -21,8 +21,12 @@ public class ShipController : GameTaskObject
     float newTaskCreationTime = 20f;
     float createNewTaskEvery_seconds = 30f;
 
-    void Start()
+    public GameObject messagePrefab;
+
+    new void Awake()
     {
+        base.Awake();
+
         SetControllingPlayerID(0);
 
         foreach (BreakableGameTask.TaskType type in BreakableGameTask.TaskTypes)
@@ -100,12 +104,22 @@ public class ShipController : GameTaskObject
         distancePassed += shipSpeed * Time.deltaTime;
     }
 
-    static string TunelIndexLetter(int tunel)
+    public static string TunelIndexLetter(int tunel)
     {
         if (tunel == 0) return "A";
         if (tunel == 1) return "B";
         if (tunel == 2) return "C";
-        return "";
+        return "ControlPanel";
+    }
+
+    string CreateMessageBroken(int floor, int tunel, int slot, BreakableGameTask.TaskType task)
+    {
+        return $"{BreakableGameTask.TaskTypeToString(task)} in section {TunelIndexLetter(tunel)}, floor {floor}, position {slot} broke.";
+    }
+
+    string CreateMessageNew(int floor, int tunel, int slot, BreakableGameTask.TaskType task)
+    {
+        return $"New {BreakableGameTask.TaskTypeToString(task)} spawned in section {TunelIndexLetter(tunel)}, floor {floor}, position {slot}.";
     }
 
     bool PerformTaskCreation()
@@ -127,8 +141,6 @@ public class ShipController : GameTaskObject
         }
 
         floorTunelOccupied[floor, tunel, slot] = true;
-
-        Debug.Log($"{floor}, {tunel}, {slot}");
 
         Vector3 position = new Vector3();
         switch (tunel)
@@ -153,13 +165,33 @@ public class ShipController : GameTaskObject
 
         Vector3 eulerAngles = new Vector3(
             0,
-            tunel == 1 ? 0 : -90,
+            tunel == 1 ? 180 : -90,
             0);
 
         string taskString = BreakableGameTask.TaskTypeToString(task);
-        networkClient.SendEvent(new GameEvent($"Create;ObjectType:{taskString};ObjectPosition:{GameEvent.EncodeVector3(position)};ObjectRotation:{GameEvent.EulerRotation(GameEvent.EncodeVector3(eulerAngles))}"));
+        List<int> additionalInfo = new List<int> { floor, tunel, slot };
+        networkClient.SendEvent(new GameEvent(
+            $"Create;ObjectType:{taskString};ObjectPosition:{GameEvent.EncodeVector3(position)};ObjectRotation:{GameEvent.EulerRotation(GameEvent.EncodeVector3(eulerAngles))};AdditionalInfo:{CreateMessageBroken(floor, tunel, slot, task)}"
+        ));
+
+        EjectMessage(CreateMessageNew(floor, tunel, slot, task));
 
         return true;
+    }
+
+    public void EjectMessage(string message)
+    {
+        if (!IsControllingPlayer())
+        {
+            return;
+        }
+
+        Vector3 position = new Vector3(0, 5, 0);
+        Quaternion rotation = Random.rotation;
+
+        networkClient.SendEvent(new GameEvent(
+            $"Create;ObjectType:Message;ObjectPosition:{GameEvent.EncodeVector3(position)};ObjectRotation:{GameEvent.EncodeQuaternion(rotation)};AdditionalInfo:{message}"
+        ));
     }
 
     public override bool PerformAction(Dictionary<string, string> actionAttributes)
@@ -173,15 +205,17 @@ public class ShipController : GameTaskObject
         {
             case "CreateGameTask":
                 return PerformTaskCreation();
+            /*case "EjectMessage":
+                return PerformMessageEjection(actionAttributes);*/
             default:
                 return base.PerformAction(actionAttributes);
         }
     }
 
-    public override void Activate()
+    /*public override void Activate()
     {
         SendEncodedAction("ActionType:CreateGameTask");
-    }
+    }*/
 
     public void IncreaseTypeCount(BreakableGameTask.TaskType type)
     {
@@ -210,6 +244,12 @@ public class ShipController : GameTaskObject
         brokenCounts[type]--;
 
         return true;
+    }
+
+    public void TryEjectMessage(string rawMessage)
+    {
+        string message = rawMessage.Replace(';', ',');
+        SendEncodedAction($"ActionType:EjectMessage;Message:{message}");
     }
 
     public bool ShouldDoorBeLocked()

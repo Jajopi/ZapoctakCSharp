@@ -27,6 +27,11 @@ public class ServerGameInitializer : MonoBehaviour
         return GameEvent.EulerRotation(eulerAngles);
     }
 
+    string CreateMessageBroken(BreakableGameTask.TaskType task)
+    {
+        return $"{BreakableGameTask.TaskTypeToString(task)} in main section broke.";
+    }
+
     void CreateLevel()
     {
         // Ship hull
@@ -77,11 +82,11 @@ public class ServerGameInitializer : MonoBehaviour
         // Ship controller
         SendEvent($"Create;ObjectType:ShipController;ObjectPosition:0~5~10;ObjectRotation:0~0~0~0");
 
-        // First four broken panels
-        SendEvent($"Create;ObjectType:DoorPanel;ObjectPosition:1.5~1~10;ObjectRotation:{EulerRotation("0~90~0")}");
-        SendEvent($"Create;ObjectType:OxyGenerator;ObjectPosition:0.5~1~10;ObjectRotation:{EulerRotation("0~90~0")}");
-        SendEvent($"Create;ObjectType:MotorReactor;ObjectPosition:-0.5~1~10;ObjectRotation:{EulerRotation("0~90~0")}");
-        SendEvent($"Create;ObjectType:WireBox;ObjectPosition:-1.5~1~10;ObjectRotation:{EulerRotation("0~90~0")}");
+        // First four panels
+        SendEvent($"Create;ObjectType:DoorPanel;ObjectPosition:1.5~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.DoorPanel)}");
+        SendEvent($"Create;ObjectType:OxyGenerator;ObjectPosition:0.5~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.OxyGenerator)}");
+        SendEvent($"Create;ObjectType:MotorReactor;ObjectPosition:-0.5~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.MotorReactor)}");
+        SendEvent($"Create;ObjectType:WireBox;ObjectPosition:-1.5~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.WireBox)}");
     }
 
     void Start()

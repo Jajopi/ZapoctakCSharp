@@ -68,3 +68,5 @@ MonoBehaviour:
       obj: {fileID: 551834402107508575, guid: 9096089ead9ff3f4bb7d0fcc73e2ae2a, type: 3}
     - name: WireBox
       obj: {fileID: 551834402107508575, guid: 01ca3780b2fa6384eafe3559ae10817f, type: 3}
+    - name: Message
+      obj: {fileID: 2851371406029274698, guid: 4ca05dde0a3c1eb459b873c805419696, type: 3}

@@ -66,10 +66,10 @@ public class GameEventReceiverClient : GameEventReceiver
 
         createdObjects.Add(objectID, newObject.GetComponent<GameTaskObject>());
 
-        /*if (creationAttributes.ContainsKey("ActionType"))
+        if (creationAttributes.ContainsKey("AdditionalInfo"))
         {
-            PerformActionOnObject(gameEvent);
-        }*/
+            newObject.GetComponent<GameTaskObject>().AddInfo(creationAttributes["AdditionalInfo"]);
+        }
     }
 
     void PerformAction(GameEvent gameEvent)

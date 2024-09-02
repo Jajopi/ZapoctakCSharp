@@ -75,10 +75,10 @@ public class GameEventReceiverServer : GameEventReceiver
 
         createdObjects.Add(newObject.GetComponent<GameTaskObject>());
 
-        /*if (creationAttributes.ContainsKey("ActionType"))
+        if (creationAttributes.ContainsKey("AdditionalInfo"))
         {
-            PerformActionOnObject(new GameEvent(gameEvent.ToString() + $";ObjectID:{newObjectID}"));
-        }*/
+            newObject.GetComponent<GameTaskObject>().AddInfo(creationAttributes["AdditionalInfo"]);
+        }
 
         networkServer.SendEvent(new GameEvent(gameEvent.ToString() + $";ObjectID:{newObjectID}"));
     }

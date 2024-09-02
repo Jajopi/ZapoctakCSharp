@@ -38,6 +38,7 @@ public class BreakableGameTask : GameTaskObject
     protected ShipController controller;
 
     public bool IsBroken { get; private set; }
+    string messageBroken;
 
     Vector3 positionFixed = new Vector3(1, -0.25f, 0);
     Vector3 positionBroken = new Vector3(1, 0.25f, 0);
@@ -92,6 +93,7 @@ public class BreakableGameTask : GameTaskObject
 
         IsBroken = true;
 
+        controller.EjectMessage(messageBroken);
         return controller.TryIncreaseBroken(type);
     }
 
@@ -126,5 +128,10 @@ public class BreakableGameTask : GameTaskObject
         {
             SendEncodedAction("ActionType:Fix");
         }
+    }
+
+    public override void AddInfo(string info)
+    {
+        messageBroken = info;
     }
 }

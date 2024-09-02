@@ -6,14 +6,18 @@ public class MenuController : MonoBehaviour
 {
     Canvas permanentCanvas;
     Canvas menuCanvas;
+    Canvas messageCanvas;
 
     void Awake()
     {
         permanentCanvas = transform.Find("PermanentCanvas").GetComponent<Canvas>();
         menuCanvas = transform.Find("MenuCanvas").GetComponent<Canvas>();
+        messageCanvas = transform.Find("MessageCanvas").GetComponent<Canvas>();
 
         menuCanvas.enabled = false;
         UpdateCursorLock(!menuCanvas.enabled);
+
+        messageCanvas.enabled = false;
     }
 
     void UpdateCursorLock(bool locked)
@@ -72,5 +76,10 @@ public class MenuController : MonoBehaviour
         {
             SceneManager.LoadScene("StartMenu");
         }
+    }
+
+    public Canvas GetMessageCanvas()
+    {
+        return messageCanvas;
     }
 }

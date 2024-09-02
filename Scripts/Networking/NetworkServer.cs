@@ -102,7 +102,11 @@ public class NetworkServer : MonoBehaviour
 
     public void RemoveClient(int clientID)
     {
-        Debug.Log(clientID - 1);
+        if (clientID == 0)
+        {
+            return;
+        }
+
         clients[clientID - 1] = null;
     }
 }

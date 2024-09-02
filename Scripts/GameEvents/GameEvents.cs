@@ -91,6 +91,16 @@ namespace GameEvents
             return values;
         }
 
+        public static List<int> ParseListOfInts(string listString)
+        {
+            List<int> values = new List<int>();
+            foreach (string rawValue in StandardizeFloats(listString).Split("~"))
+            {
+                values.Add(int.Parse(rawValue, CultureInfo.InvariantCulture));
+            }
+            return values;
+        }
+
         public static string EncodeList<TValue>(List<TValue> list)
         {
             StringBuilder sb = new StringBuilder();

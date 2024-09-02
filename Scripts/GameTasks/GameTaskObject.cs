@@ -11,7 +11,7 @@ public class GameTaskObject : MonoBehaviour
     protected NetworkClient networkClient;
     protected GameEventReceiver eventReceiver;
 
-    void Awake()
+    protected void Awake()
     {
         networkClient = GameObject.FindFirstObjectByType<NetworkClient>();
         eventReceiver = GameObject.FindFirstObjectByType<GameEventReceiver>();
@@ -44,6 +44,11 @@ public class GameTaskObject : MonoBehaviour
             default:
                 return false;
         }
+    }
+
+    public virtual void AddInfo(string info)
+    {
+        return;
     }
 
     public void SetID(int newID)
