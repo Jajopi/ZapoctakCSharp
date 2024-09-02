@@ -126,7 +126,7 @@ public class ShipController : GameTaskObject
             slot = (int)Mathf.Floor(Random.value * 30 % 30);
         }
 
-        floorTunelOccupied[floor, tunel, slot];
+        floorTunelOccupied[floor, tunel, slot] = true;
 
         Debug.Log($"{floor}, {tunel}, {slot}");
 
