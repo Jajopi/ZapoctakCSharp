@@ -24,7 +24,10 @@ public class PlayerMovement : MonoBehaviour
     float sendTransformTimer = 0f;
     GameTaskObject gameTask;
 
-    float interactionDistance = 4f;
+    GameTaskObject objectToInteract;
+    float interactionDistance = 5f;
+    float interactionTimeRemaining;
+    float interactionTime_seconds = 1;
 
     void Awake()
     {
@@ -150,18 +153,50 @@ public class PlayerMovement : MonoBehaviour
 
     void TryInteract()
     {
-        if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Mouse0))
+        if (objectToInteract is null)
         {
-            RaycastHit hit;
-            if (Physics.Raycast(playerHead.position, playerHead.TransformDirection(Vector3.forward), out hit, interactionDistance))
+            if (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Mouse0))
             {
-                GameTaskObject gameTaskObject = hit.collider.gameObject.GetComponent<GameTaskObject>();
-                if (gameTaskObject is not null)
+                RaycastHit hit;
+                if (Physics.Raycast(playerHead.position, playerHead.TransformDirection(Vector3.forward), out hit, interactionDistance))
                 {
-                    gameTaskObject.Activate();
+                    objectToInteract = hit.collider.gameObject.GetComponent<GameTaskObject>();
+                    interactionTimeRemaining = interactionTime_seconds;
+
+                    if (objectToInteract is not null)
+                    {
+                        objectToInteract.Activate();
+                    }
                 }
             }
         }
+        else
+        {
+            interactionTimeRemaining -= Time.deltaTime;
+            if (interactionTimeRemaining <= 0)
+            {
+                objectToInteract.ActivateOnHold();
+                objectToInteract = null;
+            }
+            else
+            {
+                if (!(Input.GetKey(KeyCode.E) || Input.GetKey(KeyCode.Mouse0)))
+                {
+                    objectToInteract = null;
+                }
+                
+                RaycastHit hit;
+                if (Physics.Raycast(playerHead.position, playerHead.TransformDirection(Vector3.forward), out hit, interactionDistance))
+                {
+                    if (objectToInteract != hit.collider.gameObject.GetComponent<GameTaskObject>()) objectToInteract = null;
+                }
+                else
+                {
+                    objectToInteract = null;
+                }
+            }
+        }
+        
     }
 
     void Update()

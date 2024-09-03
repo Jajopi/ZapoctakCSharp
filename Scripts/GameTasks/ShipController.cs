@@ -71,8 +71,8 @@ public class ShipController : GameTaskObject
         const BreakableGameTask.TaskType type = BreakableGameTask.TaskType.OxyGenerator;
 
         oxygenLevel -= 0.01f * GetPlayerCount() * Time.deltaTime;
-        oxygenLevel += 0.02f * (allCounts[type] - brokenCounts[type]) * Time.deltaTime;
-        oxygenLevel -= 0.01f * brokenCounts[type] * Time.deltaTime;
+        oxygenLevel += 0.03f * (allCounts[type] - brokenCounts[type]) * Time.deltaTime;
+        oxygenLevel -= 0.02f * brokenCounts[type] * Time.deltaTime;
 
         if (oxygenLevel > 1)
         {
@@ -109,7 +109,7 @@ public class ShipController : GameTaskObject
         if (tunel == 0) return "A";
         if (tunel == 1) return "B";
         if (tunel == 2) return "C";
-        return "ControlPanel";
+        return "???";
     }
 
     string CreateMessageBroken(int floor, int tunel, int slot, BreakableGameTask.TaskType task)
@@ -167,7 +167,7 @@ public class ShipController : GameTaskObject
 
         Vector3 eulerAngles = new Vector3(
             0,
-            tunel == 1 ? 180 : -90,
+            tunel == 1 ? 180 : 90,
             0);
 
         string taskString = BreakableGameTask.TaskTypeToString(task);
@@ -251,12 +251,16 @@ public class ShipController : GameTaskObject
 
     public float GetGlobalSpeed()
     {
-        return 1f / (1 + 0.2f * brokenCounts[BreakableGameTask.TaskType.WireBox]);
+        const BreakableGameTask.TaskType type = BreakableGameTask.TaskType.WireBox;
+
+        return (1f + allCounts[type] - brokenCounts[type]) / (1f + brokenCounts[type]);
     }
 
     public float GetGlobalBreakChance()
     {
-        return 1f + (0.05f * brokenCounts[BreakableGameTask.TaskType.WireBox]);
+        const BreakableGameTask.TaskType type = BreakableGameTask.TaskType.WireBox;
+
+        return 1f + 0.05f * brokenCounts[type] - 0.05f * (allCounts[type] - brokenCounts[type]);
     }
 
     int GetPlayerCount()

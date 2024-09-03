@@ -40,8 +40,8 @@ public class BreakableGameTask : GameTaskObject
     public bool IsBroken { get; private set; }
     string messageBroken;
 
-    Vector3 positionFixed = new Vector3(1, -0.25f, 0);
-    Vector3 positionBroken = new Vector3(1, 0.25f, 0);
+    Vector3 positionFixed = new Vector3(1, 0.25f, 0);
+    Vector3 positionBroken = new Vector3(1, -0.25f, 0);
     Transform movingPart;
 
     new protected void Awake()
@@ -129,7 +129,7 @@ public class BreakableGameTask : GameTaskObject
         }
     }
 
-    public override void Activate()
+    public override void ActivateOnHold()
     {
         if (IsBroken)
         {

@@ -142,6 +142,11 @@ public class GameTaskObject : MonoBehaviour
         return;
     }
 
+    public virtual void ActivateOnHold()
+    {
+        return;
+    }
+
     protected GameTaskObject GetObjectByID(int objectID)
     {
         return eventReceiver.GetObjectByID(objectID);
