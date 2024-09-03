@@ -1,2 +1,9 @@
 *.meta
 TextMesh Pro
+Library
+Logs
+Packages
+ProjectSettings
+Temp
+UserSettings
+Builds
