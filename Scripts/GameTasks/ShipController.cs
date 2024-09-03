@@ -71,7 +71,7 @@ public class ShipController : GameTaskObject
         const BreakableGameTask.TaskType type = BreakableGameTask.TaskType.OxyGenerator;
 
         oxygenLevel -= 0.01f * GetPlayerCount() * Time.deltaTime;
-        oxygenLevel += 0.01f * (allCounts[type] - brokenCounts[type]) * Time.deltaTime;
+        oxygenLevel += 0.02f * (allCounts[type] - brokenCounts[type]) * Time.deltaTime;
         oxygenLevel -= 0.01f * brokenCounts[type] * Time.deltaTime;
 
         if (oxygenLevel > 1)
