@@ -44,8 +44,10 @@ public class BreakableGameTask : GameTaskObject
     Vector3 positionBroken = new Vector3(1, 0.25f, 0);
     Transform movingPart;
 
-    protected void Start()
+    new protected void Awake()
     {
+        base.Awake();
+
         controller = GameObject.FindFirstObjectByType<ShipController>();
         SetControllingPlayerID(0);
 
@@ -78,9 +80,6 @@ public class BreakableGameTask : GameTaskObject
     void TryMoveComponent()
     {
         Vector3 targetPosition = IsBroken ? positionBroken : positionFixed;
-        /*movingPart.localPosition = Vector3.MoveTowards(movingPart.localPosition,
-                                                       targetPosition,
-                                                       movementSpeed * Time.deltaTime);*/
         movingPart.localPosition = targetPosition;
     }
 
@@ -93,8 +92,12 @@ public class BreakableGameTask : GameTaskObject
 
         IsBroken = true;
 
-        controller.EjectMessage(messageBroken);
-        return controller.TryIncreaseBroken(type);
+        if (IsControllingPlayer())
+        {
+            controller.EjectMessage(messageBroken);
+            controller.IncreaseBroken(type);
+        }
+        return true;
     }
 
     protected bool PerformFix()
@@ -106,7 +109,11 @@ public class BreakableGameTask : GameTaskObject
 
         IsBroken = false;
 
-        return controller.TryDecreaseBroken(type);
+        if (IsControllingPlayer())
+        {
+            controller.DecreaseBroken(type);
+        }
+        return true;
     }
 
     public override bool PerformAction(Dictionary<string, string> actionAttributes)

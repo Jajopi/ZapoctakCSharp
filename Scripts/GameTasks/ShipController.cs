@@ -43,20 +43,20 @@ public class ShipController : GameTaskObject
             UpdateOxygen();
             UpdateSpeed();
             UpdateDistance();
-        }
 
-        updateSendingTime -= Time.deltaTime;
-        if (updateSendingTime <= 0)
-        {
-            SendUpdates();
-            updateSendingTime = sendUpdatesEvery_seconds;
-        }
+            updateSendingTime -= Time.deltaTime;
+            if (updateSendingTime <= 0)
+            {
+                SendUpdates();
+                updateSendingTime = sendUpdatesEvery_seconds;
+            }
 
-        newTaskCreationTime -= Time.deltaTime;
-        if (newTaskCreationTime <= 0)
-        {
-            SendEncodedAction("ActionType:CreateGameTask");
-            newTaskCreationTime = createNewTaskEvery_seconds;
+            newTaskCreationTime -= Time.deltaTime;
+            if (newTaskCreationTime <= 0)
+            {
+                SendEncodedAction("ActionType:CreateGameTask");
+                newTaskCreationTime = createNewTaskEvery_seconds;
+            }
         }
     }
 
@@ -128,6 +128,7 @@ public class ShipController : GameTaskObject
         allCounts[task]++;
 
         int floor = (int)Mathf.Floor(Random.value * 3 % 3);
+        if (GetPlayerCount() == 1 && floor > 1) floor = (int)Mathf.Floor(Random.value * 2 % 2);
         int tunel = (int)Mathf.Floor(Random.value * 3 % 3);
         if (task == BreakableGameTask.TaskType.DoorPanel) tunel = 1;
         int slot = (int)Mathf.Floor(Random.value * 30 % 30);
@@ -135,6 +136,7 @@ public class ShipController : GameTaskObject
         while (floorTunelOccupied[floor, tunel, slot])
         {
             floor = (int)Mathf.Floor(Random.value * 3 % 3);
+            if (GetPlayerCount() == 1 && floor > 1) floor = (int)Mathf.Floor(Random.value * 2 % 2);
             tunel = (int)Mathf.Floor(Random.value * 3 % 3);
             if (task == BreakableGameTask.TaskType.DoorPanel) tunel = 1;
             slot = (int)Mathf.Floor(Random.value * 30 % 30);
@@ -186,7 +188,7 @@ public class ShipController : GameTaskObject
             return;
         }
 
-        Vector3 position = new Vector3(0, 5, 0);
+        Vector3 position = new Vector3(0, 14, 0);
         Quaternion rotation = Random.rotation;
 
         networkClient.SendEvent(new GameEvent(
@@ -205,8 +207,6 @@ public class ShipController : GameTaskObject
         {
             case "CreateGameTask":
                 return PerformTaskCreation();
-            /*case "EjectMessage":
-                return PerformMessageEjection(actionAttributes);*/
             default:
                 return base.PerformAction(actionAttributes);
         }
@@ -222,34 +222,24 @@ public class ShipController : GameTaskObject
         allCounts[type]++;
     }
 
-    public bool TryIncreaseBroken(BreakableGameTask.TaskType type)
+    public void IncreaseBroken(BreakableGameTask.TaskType type)
     {
         if (brokenCounts[type] == allCounts[type])
         {
-            return false;
+            return;
         }
 
         brokenCounts[type]++;
-
-        return true;
     }
 
-    public bool TryDecreaseBroken(BreakableGameTask.TaskType type)
+    public void DecreaseBroken(BreakableGameTask.TaskType type)
     {
         if (brokenCounts[type] == 0)
         {
-            return false;
+            return;
         }
 
         brokenCounts[type]--;
-
-        return true;
-    }
-
-    public void TryEjectMessage(string rawMessage)
-    {
-        string message = rawMessage.Replace(';', ',');
-        SendEncodedAction($"ActionType:EjectMessage;Message:{message}");
     }
 
     public bool ShouldDoorBeLocked()

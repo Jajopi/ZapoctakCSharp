@@ -43,7 +43,11 @@ public class MenuController : MonoBehaviour
         {
             menuCanvas.enabled = !menuCanvas.enabled;
             UpdateCursorLock(!menuCanvas.enabled);
-            GameObject.FindFirstObjectByType<PlayerMovement>().enabled = !menuCanvas.enabled;
+
+            if (GetPlayer() is not null)
+            {
+                GetPlayer().movementEnabled = !menuCanvas.enabled;
+            }
         }
     }
 
@@ -64,7 +68,10 @@ public class MenuController : MonoBehaviour
 
     public void ExitGame(bool gameEnded = false)
     {
-        GameObject.FindFirstObjectByType<PlayerMovement>().Disconnect();
+        if (GetPlayer() is not null)
+        {
+            GetPlayer().Disconnect();
+        }
 
         UpdateCursorLock(false);
 
@@ -78,8 +85,25 @@ public class MenuController : MonoBehaviour
         }
     }
 
+    void OnApplicationQuit()
+    {
+        ExitGame();
+    }
+
     public Canvas GetMessageCanvas()
     {
         return messageCanvas;
+    }
+
+    PlayerMovement GetPlayer()
+    {
+        foreach (PlayerMovement player in GameObject.FindObjectsByType<PlayerMovement>(FindObjectsSortMode.None))
+        {
+            if (player.enabled)
+            {
+                return player;
+            }
+        }
+        return null;
     }
 }

@@ -4,7 +4,7 @@ using GameEvents;
 
 public class PlayerMovement : MonoBehaviour
 {
-    bool movementEnabled;
+    public bool movementEnabled;
 
     Transform playerHead;
     float horizontalMouseSpeed = 4f;
@@ -26,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
 
     float interactionDistance = 4f;
 
-    void Start()
+    void Awake()
     {
         movementEnabled = true;
 
@@ -171,11 +171,11 @@ public class PlayerMovement : MonoBehaviour
         if (movementEnabled)
         {
             PerformUpdateMovement();
+
+            TryInteract();
         }
 
-        TrySendTransform();
-
-        TryInteract();
+        TrySendTransform();        
 
         if (transform.position.y < -5)
         {

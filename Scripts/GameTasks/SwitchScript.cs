@@ -15,8 +15,10 @@ public class SwitchScript : GameTaskObject
     Vector3 positionDeactivated = new Vector3(0, 1f, 0);
     Transform movingPart;
 
-    void Start()
+    new void Awake()
     {
+        base.Awake();
+
         movingPart = transform.Find("MovingPart");
     }
 

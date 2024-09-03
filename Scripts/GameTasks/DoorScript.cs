@@ -20,14 +20,19 @@ public class DoorScript : GameTaskObject
 
     ShipController controller;
 
-    void Start()
+    new void Awake()
     {
-        leftWing = transform.Find("LeftWing");
-        rightWing = transform.Find("RightWing");
-
-        controller = GameObject.FindFirstObjectByType<ShipController>();
+        base.Awake();
 
         SetControllingPlayerID(0);
+    }
+
+    void Start()
+    {
+        controller = GameObject.FindFirstObjectByType<ShipController>();
+
+        leftWing = transform.Find("LeftWing");
+        rightWing = transform.Find("RightWing");
     }
 
     void UpdatePositions()

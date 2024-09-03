@@ -48,8 +48,11 @@ public class GameEventReceiverServer : GameEventReceiver
     {
         Dictionary<string, string> attributes = gameEvent.EventAttributes;
 
-        GameObject.Destroy(GetObjectByID(int.Parse(attributes["ObjectID"])).gameObject);
+        int objectID = int.Parse(attributes["ObjectID"]);
+        GameObject.Destroy(GetObjectByID(objectID).gameObject);
         networkServer.RemoveClient(int.Parse(attributes["ClientID"]));
+
+        playerCount--;
 
         networkServer.SendEvent(gameEvent);
     }

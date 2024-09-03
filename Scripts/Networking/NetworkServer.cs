@@ -38,6 +38,7 @@ public class NetworkServer : MonoBehaviour
         while (networkReceiver.IsDataReady())
         {
             DataToken data = networkReceiver.GetNextReceivedData();
+            //if (!data.ToString().Contains("Temporary")) Debug.Log(data);
             eventReceiver.ReceiveEvents(data);
         }
     }
@@ -60,7 +61,7 @@ public class NetworkServer : MonoBehaviour
         string data = sentDataLog.ToString();
         if (data.Length > 0)
         {
-            Debug.Log(data);
+            //Debug.Log(data);
             networkSender.SendData(new DataToken(data), clientAddress);
         }
         return newClientID;
@@ -73,7 +74,7 @@ public class NetworkServer : MonoBehaviour
 
     void SendDataToAllClients(DataToken data)
     {
-        //Debug.Log(data);
+        //if (!data.ToString().Contains("Temporary")) Debug.Log("------------" + data.ToString());
         foreach (Uri client in clients)
         {
             if (client is null)

@@ -43,6 +43,11 @@ public class GameEventReceiverClient : GameEventReceiver
         Dictionary<string, string> attributes = gameEvent.EventAttributes;
 
         GameObject.Destroy(GetObjectByID(int.Parse(attributes["ObjectID"])).gameObject);
+
+        if (int.Parse(attributes["ClientID"]) == 0)
+        {
+            menuController.ExitGame();
+        }
     }
 
     void CreateNewGameTaskObject(GameEvent gameEvent)

@@ -131,8 +131,13 @@ public class UIController : MonoBehaviour
         }
     }
 
-    public void OpenSettings()
+    /*public void OpenSettings()
     {
         SceneManager.LoadScene("Settings");
+    }*/
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }

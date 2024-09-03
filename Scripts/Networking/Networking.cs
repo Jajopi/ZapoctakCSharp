@@ -141,6 +141,8 @@ namespace Networking
                 portNumber++;
             }
             return portNumber;
+
+            //return 80;
         }
     }
 
@@ -217,7 +219,7 @@ namespace Networking
             listener.Prefixes.Add(NetworkHelperFunctions.GetAddressInFormatForListener(address));
             listener.Start();
 
-            Debug.Log($"Receiving started at {address}");
+            //Debug.Log($"Receiving started at {address}");
 
             while (true)
             {

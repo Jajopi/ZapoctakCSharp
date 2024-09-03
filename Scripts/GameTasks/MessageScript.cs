@@ -25,8 +25,10 @@ public class MessageScript : GameTaskObject
         }
     }
 
-    void Start()
+    new void Awake()
     {
+        base.Awake();
+
         canvas = GameObject.FindFirstObjectByType<MenuController>().GetMessageCanvas();
     }
 

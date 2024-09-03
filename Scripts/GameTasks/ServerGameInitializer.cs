@@ -37,6 +37,9 @@ public class ServerGameInitializer : MonoBehaviour
         // Ship hull
         SendEvent($"Create;ObjectType:Ship;ObjectPosition:0~-0.2~0;ObjectRotation:0~0~0~0");
 
+        // Ship controller
+        SendEvent($"Create;ObjectType:ShipController;ObjectPosition:0~5~11;ObjectRotation:0~0~0~0");
+
         // Player
         SendEvent($"Create;ObjectType:Player;ControllerID:0;ObjectPosition:0~1~5;ObjectRotation:0~0~0~0");
 
@@ -78,9 +81,6 @@ public class ServerGameInitializer : MonoBehaviour
             SendEvent($"Create;ObjectType:Switch;ObjectPosition:-17~{height + 0.2f}~-4;ObjectRotation:0~0~0~0");
             SendEvent($"Action;ObjectID:{LastIndex};ActionType:SetTarget;TargetID:{LastIndex - 2}");
         }
-
-        // Ship controller
-        SendEvent($"Create;ObjectType:ShipController;ObjectPosition:0~5~10;ObjectRotation:0~0~0~0");
 
         // First four panels
         SendEvent($"Create;ObjectType:DoorPanel;ObjectPosition:1.5~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.DoorPanel)}");
