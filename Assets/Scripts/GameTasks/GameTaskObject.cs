@@ -48,7 +48,10 @@ public class GameTaskObject : MonoBehaviour
 
     public virtual void AddInfo(string info)
     {
-        return;
+        if (gameObject.GetComponent<PlayerMovement>() is not null)
+        {
+            gameObject.GetComponent<PlayerMovement>().SetName(info);
+        }
     }
 
     public void SetID(int newID)

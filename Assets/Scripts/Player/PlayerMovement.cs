@@ -231,4 +231,9 @@ public class PlayerMovement : MonoBehaviour
             gameTaskObject.ActivateOnTouch();
         }
     }
+
+    public void SetName(string name)
+    {
+        transform.GetComponentInChildren<NameScript>().SetName(name);
+    }
 }

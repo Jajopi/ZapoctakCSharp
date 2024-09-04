@@ -43,14 +43,6 @@ public class NetworkServer : MonoBehaviour
         }
     }
 
-    void OnApplicationQuit()
-    {
-        if (networkReceiver != null)
-        {
-            networkReceiver.EndReceiving();
-        }
-    }
-
     public int AddClient(Uri clientAddress)
     {
         clients.Add(clientAddress);
@@ -109,5 +101,13 @@ public class NetworkServer : MonoBehaviour
         }
 
         clients[clientID - 1] = null;
+    }
+
+    void OnDestroy()
+    {
+        if (networkReceiver != null)
+        {
+            networkReceiver.EndReceiving();
+        }
     }
 }

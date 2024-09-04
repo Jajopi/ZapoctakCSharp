@@ -128,7 +128,7 @@ public class ShipController : GameTaskObject
         allCounts[task]++;
 
         int floor = (int)Mathf.Floor(Random.value * 3 % 3);
-        if (GetPlayerCount() == 1 && floor > 1) floor = (int)Mathf.Floor(Random.value * 2 % 2);
+        if (GetPlayerCount() < 2 && floor > 1) floor--;
         int tunel = (int)Mathf.Floor(Random.value * 3 % 3);
         if (task == BreakableGameTask.TaskType.DoorPanel) tunel = 1;
         int slot = (int)Mathf.Floor(Random.value * 30 % 30);
@@ -136,7 +136,7 @@ public class ShipController : GameTaskObject
         while (floorTunelOccupied[floor, tunel, slot])
         {
             floor = (int)Mathf.Floor(Random.value * 3 % 3);
-            if (GetPlayerCount() == 1 && floor > 1) floor = (int)Mathf.Floor(Random.value * 2 % 2);
+            if (GetPlayerCount() < 2 && floor > 1) floor--;
             tunel = (int)Mathf.Floor(Random.value * 3 % 3);
             if (task == BreakableGameTask.TaskType.DoorPanel) tunel = 1;
             slot = (int)Mathf.Floor(Random.value * 30 % 30);

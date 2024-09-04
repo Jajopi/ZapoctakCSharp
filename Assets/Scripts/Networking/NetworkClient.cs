@@ -33,7 +33,9 @@ public class NetworkClient : MonoBehaviour
         Uri targetAddress = GetTargetAddress();
         networkSender.SetTarget(targetAddress);
 
-        GameEvent connectionEvent = new GameEvent($"Connect;ClientAddress:{receivingAddress}");
+        string playerName = PlayerPrefs.GetString("PlayerName");
+
+        GameEvent connectionEvent = new GameEvent($"Connect;ClientAddress:{receivingAddress};PlayerName:{playerName}");
         networkSender.SendData(new DataToken(connectionEvent.ToString()));
     }
 
@@ -55,14 +57,6 @@ public class NetworkClient : MonoBehaviour
         }
     }
 
-    void OnApplicationQuit()
-    {
-        if (networkReceiver != null)
-        {
-            networkReceiver.EndReceiving();
-        }
-    }
-
     public virtual void SendEvent(GameEvent gameEvent)
     {
         networkSender.SendData(new DataToken(gameEvent.ToString()));
@@ -76,5 +70,13 @@ public class NetworkClient : MonoBehaviour
     public void SetClientID(int newClientID)
     {
         clientID = newClientID;
+    }
+
+    void OnDestroy()
+    {
+        if (networkReceiver != null)
+        {
+            networkReceiver.EndReceiving();
+        }
     }
 }

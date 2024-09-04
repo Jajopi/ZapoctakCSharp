@@ -41,7 +41,7 @@ public class ServerGameInitializer : MonoBehaviour
         SendEvent($"Create;ObjectType:ShipController;ObjectPosition:0~5~11;ObjectRotation:0~0~0~0");
 
         // Player
-        SendEvent($"Create;ObjectType:Player;ControllerID:0;ObjectPosition:0~1~5;ObjectRotation:0~0~0~0");
+        SendEvent($"Create;ObjectType:Player;ControllerID:0;ObjectPosition:0~1~5;ObjectRotation:0~0~0~0;AdditionalInfo:{PlayerPrefs.GetString("PlayerName")}");
 
         // Elevators
         SendEvent($"Create;ObjectType:Elevator;ObjectPosition:9~0~0;ObjectRotation:0~0~0~0");
@@ -82,11 +82,12 @@ public class ServerGameInitializer : MonoBehaviour
             SendEvent($"Action;ObjectID:{LastIndex};ActionType:SetTarget;TargetID:{LastIndex - 2}");
         }
 
-        // First four panels
-        SendEvent($"Create;ObjectType:DoorPanel;ObjectPosition:1.5~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.DoorPanel)}");
-        SendEvent($"Create;ObjectType:OxyGenerator;ObjectPosition:0.5~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.OxyGenerator)}");
-        SendEvent($"Create;ObjectType:MotorReactor;ObjectPosition:-0.5~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.MotorReactor)}");
-        SendEvent($"Create;ObjectType:WireBox;ObjectPosition:-1.5~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.WireBox)}");
+        // First five panels
+        SendEvent($"Create;ObjectType:DoorPanel;ObjectPosition:2~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.DoorPanel)}");
+        SendEvent($"Create;ObjectType:OxyGenerator;ObjectPosition:1~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.OxyGenerator)}");
+        SendEvent($"Create;ObjectType:OxyGenerator;ObjectPosition:0~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.OxyGenerator)}");
+        SendEvent($"Create;ObjectType:MotorReactor;ObjectPosition:-1~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.MotorReactor)}");
+        SendEvent($"Create;ObjectType:WireBox;ObjectPosition:-2~1~10;ObjectRotation:{EulerRotation("0~90~0")};AdditionalInfo:{CreateMessageBroken(BreakableGameTask.TaskType.WireBox)}");
     }
 
     void Start()

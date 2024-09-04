@@ -21,7 +21,7 @@ public class NetworkClientMimic : NetworkClient
 
     void Update()
     {
-
+        return;
     }
 
     public override void SendEvent(GameEvent gameEvent)

@@ -105,13 +105,13 @@ public class UIController : MonoBehaviour
 
     bool IsAllDataFieldsCorrect()
     {
-        CheckAddressField();
-        CheckNameField();
         return IsAddressFieldCorrect() && IsNameFieldCorrect();
     }
 
     public void TryProceedAsServer()
     {
+        CheckNameField();
+
         if (IsNameFieldCorrect())
         {
             PlayerPrefs.SetString("PlayerName", nameInput.GetComponent<TMP_InputField>().text);
@@ -122,6 +122,9 @@ public class UIController : MonoBehaviour
 
     public void TryProceedAsClient()
     {
+        CheckAddressField();
+        CheckNameField();
+
         if (IsAllDataFieldsCorrect())
         {
             PlayerPrefs.SetString("PlayerName", nameInput.GetComponent<TMP_InputField>().text);

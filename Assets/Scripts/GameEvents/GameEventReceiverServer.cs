@@ -19,6 +19,8 @@ public class GameEventReceiverServer : GameEventReceiver
         networkServer = transform.GetComponent<NetworkServer>();
         menuController = GameObject.FindFirstObjectByType<MenuController>();
         typeNameToObjectDictionary = GameObject.FindFirstObjectByType<ObjectTypeDictionaryHolder>().GetDictionary();
+
+        playerCount = 1;
     }
 
     void Start()
@@ -31,17 +33,18 @@ public class GameEventReceiverServer : GameEventReceiver
         return createdObjects[objectID];
     }
 
-    void CreateNewPlayer(int controllerID)
+    void CreateNewPlayer(int controllerID, string playerName)
     {
         playerCount++;
-        CreateNewGameTaskObject(new GameEvent($"Create;ObjectType:Player;ControllerID:{controllerID};ObjectPosition:0~1~5;ObjectRotation:0~0~0~0"));
+        CreateNewGameTaskObject(new GameEvent($"Create;ObjectType:Player;ControllerID:{controllerID};ObjectPosition:0~1~5;ObjectRotation:0~0~0~0;AdditionalInfo:{playerName}"));
     }
 
     void ConnectNewClient(GameEvent gameEvent)
     {
         int newClientID = networkServer.AddClient(new Uri(gameEvent.EventAttributes["ClientAddress"]));
+        string playerName = gameEvent.EventAttributes["PlayerName"];
 
-        CreateNewPlayer(newClientID);
+        CreateNewPlayer(newClientID, playerName);
     }
 
     void DisconnectClient(GameEvent gameEvent)
