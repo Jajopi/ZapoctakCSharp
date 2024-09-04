@@ -25,18 +25,21 @@ a teda hra sa postupne sťažuje.
 Cieľom hráčov je dosiahnuť čo najvyššiu prejdenú vzdialenosť,
 kým im dojde kyslík a hra sa skončí.
 
-### Objecty a sekcie
+### Objekty a sekcie
 
 V hre sa nachádzajú štyri typy objektov,
 ktoré majú tvar kocky s hranolom v polohe hore alebo dolu
-(signalizujúcu ich stav $-$ hore znamená, že objekt je funkčný,
+(signalizujúcu ich stav -- hore znamená, že objekt je funkčný,
 dole je že pokazený).
 Objekty majú jednu zo štyroch farieb, podľa ktorej je možné odlíšiť ich typ.
 Jednotlivé typy postupne rozoberieme ďalej.
 
-Na začiatku sa jeden objekt z každého typu nachádza v centrálnej časti lode.
+Na začiatku sa jeden objekt z každého typu
+(a ešte jeden modrý OxyGenerator naviac)
+nachádza v centrálnej časti lode.
 Postupne objekty pribúdajú do sekcií A, B alebo C,
-na jedno z troch poschodí na náhodné zatiaľ neobsadené miesto.
+na jedno z troch poschodí, na náhodné, zatiaľ neobsadené miesto.
+Nový objekt vznikne každých $30$ sekúnd.
 
 ### Vzdialenosť a motory
 
@@ -44,7 +47,7 @@ na jedno z troch poschodí na náhodné zatiaľ neobsadené miesto.
 Loď sa pohybuje dopredu rýchlosťou, ktorá je vždy v rozsahu
 $0 - n$ parsekov ($pc$) za sekudu, kde $n$ je aktuálny počet motorov.
 
-Rýchlosť sa postupne mení podľa počtu funkčných a nefunkčných motorov $-$
+Rýchlosť sa postupne mení podľa počtu funkčných a nefunkčných motorov --
 každý funkčný motor ju zvyšuje o $0.1 pc/s$ za sekundu
 a každý nefunkčný ju o danú hodnotu znižuje.
 
