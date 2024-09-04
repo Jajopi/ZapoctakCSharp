@@ -68,12 +68,12 @@ public class MenuController : MonoBehaviour
 
     public void ExitGame(bool gameEnded = false)
     {
+        UpdateCursorLock(false);
+
         if (GetPlayer() is not null)
         {
             GetPlayer().Disconnect();
         }
-
-        UpdateCursorLock(false);
 
         if (gameEnded)
         {

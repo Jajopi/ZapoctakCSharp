@@ -18,10 +18,7 @@ namespace Networking
     {
         const string SEPARATOR = "|";
 
-        //public int CreatorID;
         public DateTime CreationTime;
-        //public string Tag;
-        //public bool Permanence;
         public string Value;
 
         public override string ToString()
@@ -141,8 +138,6 @@ namespace Networking
                 portNumber++;
             }
             return portNumber;
-
-            //return 80;
         }
     }
 
@@ -184,18 +179,11 @@ namespace Networking
         IDataStoragePusher<DataToken> storagePusher;
         IDataStoragePopper<DataToken> storagePopper;
 
-        public SimpleReceiver(Uri receivingAddress, bool isStorageRewritable = false)
+        public SimpleReceiver(Uri receivingAddress)
         {
             address = receivingAddress;
 
-            if (isStorageRewritable)
-            {
-                storage = new RewritableDataStorage<DataToken>();
-            }
-            else
-            {
-                storage = new ConstantCapacityDataStorage<DataToken>(100);
-            }
+            storage = new ConstantCapacityDataStorage<DataToken>(100);
 
             storagePusher = storage.Pusher;
             storagePopper = storage.Popper;
@@ -218,8 +206,6 @@ namespace Networking
             listener = new HttpListener();
             listener.Prefixes.Add(NetworkHelperFunctions.GetAddressInFormatForListener(address));
             listener.Start();
-
-            //Debug.Log($"Receiving started at {address}");
 
             while (true)
             {

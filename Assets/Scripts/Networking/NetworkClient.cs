@@ -26,7 +26,7 @@ public class NetworkClient : MonoBehaviour
         int freePort = NetworkHelperFunctions.GetRandomFreePort();
         Uri receivingAddress = NetworkHelperFunctions.GetReceivingAddress(freePort);
 
-        networkReceiver = new SimpleReceiver(receivingAddress, false);
+        networkReceiver = new SimpleReceiver(receivingAddress);
         networkReceiver.StartReceiving();
 
         networkSender = new SimpleSender();

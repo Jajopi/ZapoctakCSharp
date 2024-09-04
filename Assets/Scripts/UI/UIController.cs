@@ -10,8 +10,8 @@ public class UIController : MonoBehaviour
     public GameObject nameInput;
     public TMP_Text nameErrorText;
 
-    const string ADDRESS_ERROR = "Address must be in format x.x.x.x:port!";
-    const string NAME_ERROR = "Nickname must be nonempty!";
+    const string ADDRESS_ERROR = "Address must be in format x.x.x.x:port.";
+    const string NAME_ERROR = "Nickname must be nonempty and cannot contain semicolon (;).";
 
     void Start()
     {
@@ -100,7 +100,17 @@ public class UIController : MonoBehaviour
     bool IsNameFieldCorrect()
     {
         string text = nameInput.GetComponent<TMP_InputField>().text;
-        return text.Trim().Length > 0;
+
+        if (text.Trim().Length == 0)
+        {
+            return false;
+        }
+        if (text.Contains(";"))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     bool IsAllDataFieldsCorrect()

@@ -10,7 +10,6 @@ public class SwitchScript : GameTaskObject
 
     bool activated = false;
 
-    //float movementSpeed = 0.05f;
     Vector3 positionActivated = new Vector3(0, 0.2f, 0);
     Vector3 positionDeactivated = new Vector3(0, 1f, 0);
     Transform movingPart;
@@ -25,9 +24,6 @@ public class SwitchScript : GameTaskObject
     void TryMoveComponent()
     {
         Vector3 targetPosition = activated ? positionActivated : positionDeactivated;
-        /*movingPart.localPosition = Vector3.MoveTowards(movingPart.localPosition,
-                                                       targetPosition,
-                                                       movementSpeed * Time.deltaTime);*/
         movingPart.localPosition = targetPosition;
     }
 

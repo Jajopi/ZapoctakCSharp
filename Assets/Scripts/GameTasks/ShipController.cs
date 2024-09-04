@@ -18,7 +18,7 @@ public class ShipController : GameTaskObject
     float updateSendingTime = 0f;
     float sendUpdatesEvery_seconds = 0.2f;
 
-    float newTaskCreationTime = 20f;
+    float newTaskCreationTime = 30f;
     float createNewTaskEvery_seconds = 30f;
 
     public GameObject messagePrefab;
@@ -211,11 +211,6 @@ public class ShipController : GameTaskObject
                 return base.PerformAction(actionAttributes);
         }
     }
-
-    /*public override void Activate()
-    {
-        SendEncodedAction("ActionType:CreateGameTask");
-    }*/
 
     public void IncreaseTypeCount(BreakableGameTask.TaskType type)
     {

@@ -29,6 +29,6 @@ public class NameScript : MonoBehaviour
 
     public void SetName(string name)
     {
-        gameObject.GetComponent<TextMesh>().text = name;
+        gameObject.GetComponentInChildren<TextMesh>().text = name;
     }
 }

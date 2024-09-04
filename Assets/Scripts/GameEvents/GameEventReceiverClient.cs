@@ -46,7 +46,7 @@ public class GameEventReceiverClient : GameEventReceiver
 
         if (int.Parse(attributes["ClientID"]) == 0)
         {
-            menuController.ExitGame();
+            menuController.ExitGame(true);
         }
     }
 
