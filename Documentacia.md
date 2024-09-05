@@ -201,7 +201,8 @@ a podľa jeho typu sa vo funkcií PerformAction rozhodne, čo s ním spraví:
 - Create
   - Client aj Server spracujú event rovnako, Server ho aj prepošle ďalej.
   Event musí obsahovať atribúty "ObjectType", "ObjectPosition",
-  "ObjectRotation", pre klienta aj "ObjectID" (server ho pridelí sám).
+  "ObjectRotation", pre klienta aj "ObjectID"
+  (server ho pridelí sám a klientovi k pôvodnej správe pridá).
   Vytvorí sa objekt určeného typu podľa prefabu,
   ktorý obsahuje komponent dediaci od GameTaskObject.
   Ak event obsahuje "ControllerID",
@@ -213,7 +214,8 @@ a podľa jeho typu sa vo funkcií PerformAction rozhodne, čo s ním spraví:
   aj to sa predá vytvorenému objektu zavolaním metódy AddInfo.
 - Action
   - Client zavolá na objekte nájdenom podľa "ObjectID" metódu PerformAction
-  a predá jej všetky atribúty. Každý objekt si splnenie akcie rieši sám.
+  a predá jej všetky atribúty v podobe Dictionary<string, string>.
+  Každý objekt si prevedenie a úspešnosť akcie vyhodnocuje sám.
   Každá akcia musí mať atribút "ActionType".
   Action najčastejšie vzniká tak,
   že ho určitý GameTaskObject vytvorí a cez NetworkClient pošle serveru.
@@ -278,13 +280,88 @@ aby bolo možné predať už pri vytvorení konkrétne informácie.
 BreakableGameTask má jeden zo štyroch typov:
 DoorPanel, OxyGenerator, MotorReactor a WireBox.
 Každý z nich má vlastný prefab,
-ale zatiaľ sa okrem typu odlišujú iba farbou.
+ale zatiaľ sa okrem typu odlišujú iba farbou
+a priemerným časom, za ktorý sa rozbijú.
+
+Objekt sa sám pokazí s určitou pravdepodobnosťou,
+pokiaľ sa nachádza na serveri.
+Ak bolo pokazenie sa úspešné, zavolá metódu ShipControllera,
+ktorá vyrobí správu o pokazení sa objektu.
+Správu, v ktorej je poloha, dostane objekt pri vytvorení v atribúte
+"AdditionaInfo".
+Opraviť ho môže ktorýkoľvek hráč cez metódu ActivateOnHold.
+
+Dokáže spracovať akcie typu "Break" a "Fix".
 
 #### SwitchScript, ElevatorScript, DoorScript
 
+SwitchScript spracováva akcie typu "SetTarget" a "CycleSwitch".
+SetTarget mení objekt, ktorému prepínač po aktivovaní pošle
+akciu CycleSwitch a je nutné ju poslať po jeho vytvorení.
+
+CycleSwitch sa pošle potom, ako je spínač stlačený
+(metódou Activate alebo ActivateOnTouch).
+Ak je akcia úspešná, pošle CycleSwitch aj targetu.
+
+ElevatorScript na CycleSwitch zareaguje prehodením cieľovej pozície,
+do ktorej sa potom pohybuje svojou aktuálnou rýchlosťou
+(závislou na počte funkčných a nefunkčných WireBoxov,
+ktorý si pamätá ShipController).
+Okrem toho reaguje aj na akciu SetSwitchValues,
+ktorá pomocou atribútu "SwitchValues" nastaví výšky,
+v ktorých výťah postupne zastavuje.
+
+DoorScript reaguje na akcie "CycleSwitch", "Open" a "Close".
+Všetky tri sa pokúšajú zmeniť stav otvorenia,
+pričom zavrieť dvere je možné vždy,
+ale otvoriť iba v prípade, že to dovoľuje ShipController
+(jeden z BreakableGameTaskov totiž pri dostatočnom počte pokazených
+dvere zasekáva).
+Zároveň sa každé dvere samé pokúsia po určenom čase od posledného
+otvorenia zatvoriť (spustenie tejto akcie prebieha iba na serveri).
+Dvere sa otvárajú určitou rýchlosťou,
+ktorá je ovplyvnená globálnou rýchlosťou, rovnako ako rýchlosť výťahu.
+
 #### ShipController
 
+ShipController udržuje počet funkčných a nefunkčných BreakableGameTaskov,
+aktualizuje podľa ich počtu prejdenú vzdialenosť (skóre)
+a hladinu kyslíka,
+a tiež globálnu rýchlosť a globálnu šancu na pokazenie sa objektov.
+Zisťuje tiež, či majú byť dvere zaseknuté.
+Toto prebieha na serveri aj v klientoch.
+
+Iba na serveri prebieha vytváranie nových BreakableGameTaskov
+(každý určený počet sekúnd) a vysielanie správ o ich
+vytvorení alebo pokazení sa.
+ShipController reaguje aj na akciu typu CreateGameTask,
+ktorá sa momentálne nepoužíva,
+no pri vývoji hry som uvažoval nad možnosťou vyrábať
+nové BreakableGameTasky aktiváciou ShipControllera
+(ktorú som neskôr zrušil, no nechal som zatiaľ túto možnosť otvorenú).
+
 #### MessageScript
+
+Správy existujú u každého hráča separátne,
+ich poloha sa nesynchronizuje, ale keď jeden z hráčov správu zničí,
+zmizne všetkým.
+Reagujú teda na akciu typu "Destroy",
+ktorá sa volá pri stlačení určitého tlačidla počas prehliadania správy.
+Text správy prijímajú ako AdditonalInfo pri vytvorení.
+Prehliadanie správy sa realizuje pomocou vyhradenej Canvas
+v MenuControlleri.
+
+### ServerGameInitializer
+
+Keďže každý event musí na server najskôr nejaký objekt poslať,
+ale zároveň sa nimi dá dobre vyskladať začiatočné rozloženie lode,
+objekt ServerGameInitializer sa spustí v scéne hry na serveri
+po inicializácií ostatných scriptov
+a postupne pošle jednotlivé definované príkazy,
+ktoré vyrobia z prefabov loď, ShipController, výťahy, dvere, tlačidlá
+a základné BreakableGameTasky na správnych miestach.
+Vďaka tomu sa zároveň všetky tieto informácie pošlú aj klientom po tom,
+čo sa pripoja, pretože si ich uloží NetworkServer pri posielaní.
 
 ### PlayerMovement
 
@@ -347,3 +424,7 @@ a z ktorého je ich potom  možné získať
 v prípade potreby vyrobiť nový objekt podľa názvu jeho typu.
 Využíva pritom atribúty [Serializable] a [SerializeField]
 a ďalšie typy definované v súbore GameEvents.cs.
+
+##
+
+Ján Plachý, 5.9.2024
