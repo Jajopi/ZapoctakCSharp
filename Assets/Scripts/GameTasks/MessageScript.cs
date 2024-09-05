@@ -15,14 +15,15 @@ public class MessageScript : GameTaskObject
         switch (actionAttributes["ActionType"])
         {
             case "Destroy":
-                if (ControllingPlayerID == GetPlayerID())
-                {
-                    return true;
-                }
-                return PerformTransformSet(actionAttributes);
-            default:
-                return false;
+                return PerformDestroy();
         }
+        return base.PerformAction(actionAttributes);
+    }
+
+    bool PerformDestroy()
+    {
+        Destroy(gameObject);
+        return true;
     }
 
     new void Awake()
@@ -43,9 +44,14 @@ public class MessageScript : GameTaskObject
             if (Input.GetKeyDown(KeyCode.Q))
             {
                 Deactivate();
-                Destroy(gameObject);
+                TryDestroy();
             }
         }
+    }
+
+    void TryDestroy()
+    {
+        SendEncodedAction("ActionType:Destroy");
     }
 
     string GetMessageText()
