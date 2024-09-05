@@ -3,7 +3,8 @@
 Hra je vytvorená pomocou Unity.
 To spôsobuje niektoré drobné odlišnosti v používaní jazyka
 oproti klasickému použitiu.
-Charakteristické je, že takmer všetky triedy dedia od triedy MonoBehaviour,
+Charakteristické je,
+že takmer všetky mnou vyrobené triedy dedia od MonoBehaviour,
 vďaka čomu je možné ich pridať na objekty v scéne
 a spúšťajú sa na nich metódy charakteristické pre Unity,
 na základe rôznych udalostí
@@ -11,6 +12,10 @@ na základe rôznych udalostí
 Objekty je možné uložiť ako takzvané Prefabs,
 v ktorých je pre konkrétny objekt uložený celý strom jeho detí
 aj so všetkými vlastnosťami menenými v editore.
+Objektom sa dajú pridať rôzne komponenty,
+napríklad collidery alebo meshe,
+ale aj scripty, ktoré potom daný objekt používa
+(a v tomto texte ich občas zamieňam za objekty samotné).
 
 Unity si veľmi nerozumie s vláknami,
 celá hra štandardne beží v jednom vlákne
@@ -49,7 +54,10 @@ Tá sa zobrazí každému hráčovi po skončení hry.
 
 ## Triedy
 
-Jednotlivé triedy a ich hlavné úlohy.
+Jednotlivé triedy, ich úlohy a interakcia.
+
+Zjednodušená schéma komunikácie jednotlivých tried:
+![Zjednodušená schéma komunikácie jednotlivých tried](scheme.png)
 
 ### Networking
 
@@ -96,7 +104,7 @@ a tieto umiestňuje do úložiska ConstantCapacityDataStorage.
 Zároveň poskytuje možnosť vytiahnuť z tohoto úložiska údaje na požiadanie,
 čo sa už deje v hlavnom vlákne spolu so zbytkom aplikácie.
 
-#### `ConstantCapacityDataStorage<TData>`
+#### ConstantCapacityDataStorage\<TData>
 
 Táto generická trieda (ktorá tiež nededí od MonoBehaviour)
 je zodpovedná za presúvanie dát (hodnotového typu)
@@ -131,7 +139,7 @@ ale odlišujú sa v detailoch, pretože server má viac úloh.
 Obidve spolupracujú s GameEventReceivermi,
 jedna s GameEventReceiverServerom, druhá s GameEventReceiverClientom.
 
-NetworkClient má vlastný Sender aj Receiver,
+NetworkClient má vlastný NetworkSender aj NetworkReceiver,
 po vzniku pošle cez Sender správu serveru
 (ktorého adresu zistí z PlayerPrefs) o tom, že sa pripája nový klient.
 Vo funkcií Update (volanej v každom frame) sa pýta Receivera,
@@ -194,7 +202,10 @@ a podľa jeho typu sa vo funkcií PerformAction rozhodne, čo s ním spraví:
   - Client aj Server spracujú event rovnako, Server ho aj prepošle ďalej.
   Event musí obsahovať atribúty "ObjectType", "ObjectPosition",
   "ObjectRotation", pre klienta aj "ObjectID" (server ho pridelí sám).
-  Ak obsahuje "ControllerID", nastaví sa vytvorenému objektu ID hráča,
+  Vytvorí sa objekt určeného typu podľa prefabu,
+  ktorý obsahuje komponent dediaci od GameTaskObject.
+  Ak event obsahuje "ControllerID",
+  nastaví sa vytvorenému objektu ID hráča,
   ktorý ako jediný môže daný objekt kontrolovať
   (toto si jednotlivé objekty, pre ktoré je to relevantné, riešia samé),
   napríklad postavy hráčov alebo ShipController
@@ -227,6 +238,84 @@ Interne obsahuje GameEvent konkrétny typ eventu, informáciu o tom,
 Pri posielaní sa zmení na textovú reprezentáciu
 a pri doručení sa znova sparsuje na internú reprezentáciu.
 
+### GameTaskObject
+
+Všetky herné objekty, s ktorými môže interagovať hráč
+alebo dokážu spracovať akciu a vyhodnotiť, či bola úspešná,
+majú ako komponent script GameTaskObject alebo jeho potomka.
+
+Fungujú rovnako na serveri aj v klientovi, teda sa správajú,
+ako keby boli v klientovi.
+Niektoré však vykonávajú určité akcie iba pokiaľ je klient
+zároveň hráčom, ktorý ich kontroluje.
+Napríklad ShipController alebo BreakableGameTask
+vykonávajú určité akcie len u klienta s ID 0, ktorým je vždy server.
+Objekty jednotlivých hráčov zase reagujú na vstup
+a posielajú svoju pozíciu len u klientov, ktorí za nich hrajú
+a u ostatných sa ich pozícia periodicky aktualizuje
+podľa informácií od servera.
+
+Každý GameTaskObject má tri public metódy na interakciu,
+ktoré podrobnejšie rozoberiem v časti PlayerMovement.
+
+Tiež má metódu PerformAction, ktorú u neho volá GameEventReceiver.
+Táto metóda dostane popis akcie ako Dictionary<string, string>
+(z GameEventu), pokúsi sa danú akciu spraviť a vráti true alebo false
+podľa výsledku, či sa akcia podarila.
+GameEventReceiverClient návratovú hodnotu zahodí -- počíta sa s tým,
+že akcie, ktoré má vykonať, sa podarilo vykonať na serveri,
+teda sa ich podarí vykonať aj v klientovi.
+Server podľa danej návratovej hodnoty rozhodne,
+či akciu preposlať klientom.
+
+GameTaskObjectu sa tiež dá nastaviť kontrolujúci hráč
+a má metódy na odoslanie akcie zmeny svojej polohy a jej spracovanie.
+Má tiež metódu AddInfo, ktorá sa volá pri vytváraní,
+aby bolo možné predať už pri vytvorení konkrétne informácie.
+
+#### BreakableGameTask
+
+BreakableGameTask má jeden zo štyroch typov:
+DoorPanel, OxyGenerator, MotorReactor a WireBox.
+Každý z nich má vlastný prefab,
+ale zatiaľ sa okrem typu odlišujú iba farbou.
+
+#### SwitchScript, ElevatorScript, DoorScript
+
+#### ShipController
+
+#### MessageScript
+
+### PlayerMovement
+
+Tento script je zodpovedný za pohyb a interakciu hráča s hrou,
+ale čiastočne aj za komunikáciu so serverom.
+
+Vstup od uživateľa je riešený kombináciou starého a nového InputSystemu,
+pohyb a interakcia sú celé naprogramované tu.
+Pri interakcií vie hráč aktivovať jednu z troch metód objektu
+typu GameTaskObject,
+s ktorým interaguje:
+
+- ActivateOnTouch -- pri dotyku collidera hráča a collidera objektu.
+- Activate -- pri stlačení E alebo ľavého tlačidla myši a mierení na objekt
+(a dostatočne malej vzdialenosti, vyhodnocuje sa pomocou raycastu).
+- ActivateOnHold -- ako Activate, ak je neprerušene držaná určený čas.
+
+V rámci komunikácie so serverom objekt cez klienta
+posiela informáciu o odpojení sa
+a tiež pravidelné dočasné akcie zmeny svojej polohy.
+
+#### LegsScript a NameScript
+
+LegsScript zodpovedá za zisťovanie, či hráč môže vyskočiť
+tým, že počíta collidery, ktorých sa práve "nohy" hráča dotýkajú.
+
+NameScript si na začiatku nájde aktívneho hráča
+(teda takého, ktorý sa pohybuje na základe interakcie daného klienta)
+a po celý čas sa otáča smerom k nemu,
+aby daný hráč videl mená všetkých ostatných.
+
 ### UI
 
 #### MenuController
@@ -254,5 +343,7 @@ Trieda UIController tiež testuje validitu vstupov mena a adresy.
 Aby sa dali dvojice názov typu -- typ objektu dobre meniť v editore,
 sú ich prefaby uložené v prefabe ObjectTypeDictionaryHolder,
 ktorého inštancia existuje v scéne hry servera aj klienta,
-a z ktorého je ich potom v prípade potreby vyrobiť nový objekt
-podľa názvu jeho typu možné získať.
+a z ktorého je ich potom  možné získať
+v prípade potreby vyrobiť nový objekt podľa názvu jeho typu.
+Využíva pritom atribúty [Serializable] a [SerializeField]
+a ďalšie typy definované v súbore GameEvents.cs.
